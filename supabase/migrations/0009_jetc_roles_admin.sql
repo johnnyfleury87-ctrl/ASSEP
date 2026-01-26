@@ -171,6 +171,15 @@ FOR UPDATE
 USING (public.is_jetc_admin())
 WITH CHECK (public.is_jetc_admin());
 
+-- 5. ALL: Le service role (API backend) peut tout faire
+DROP POLICY IF EXISTS "Service role can do anything" ON public.profiles;
+CREATE POLICY "Service role can do anything"
+ON public.profiles
+FOR ALL
+TO service_role
+USING (true)
+WITH CHECK (true);
+
 -- ============================================================================
 -- GRANTS
 -- ============================================================================
