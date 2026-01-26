@@ -633,6 +633,44 @@ npm run build  # vérifier que tout compile
 
 ---
 
-## 📄 Licence
+## � Déploiement Vercel
+
+### Configuration automatique
+
+Le projet inclut `vercel.json` pour la détection automatique du framework :
+
+```json
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install"
+}
+```
+
+### ⚠️ Erreur "No Output Directory named public"
+
+Si vous voyez cette erreur lors du déploiement :
+
+**Cause :** Vercel n'a pas détecté Next.js et cherche un dossier `public` (site statique).
+
+**Solution :** Vérifier dans Vercel Dashboard → Project Settings :
+- **Framework Preset :** Doit être "Next.js" (pas "Other")
+- **Output Directory :** Doit être **vide** ou `.next` (jamais "public")
+- **Build Command :** `npm run build`
+
+Le fichier `vercel.json` à la racine force la détection Next.js. Ne jamais définir manuellement l'output directory.
+
+### Guide complet
+
+Voir [DEPLOYMENT.md](./DEPLOYMENT.md) pour le guide complet avec :
+- Configuration Supabase
+- Variables d'environnement Vercel
+- Création du premier admin
+- Tests de validation
+
+---
+
+## �📄 Licence
 
 Projet interne ASSEP - École Hubert Reeves

@@ -42,9 +42,32 @@ Dans Supabase → **Project Settings → API**:
 1. Aller sur https://vercel.com/new
 2. Cliquer sur **Import Git Repository**
 3. Sélectionner votre repo GitHub `ASSEP`
-4. Vercel détecte automatiquement Next.js
+4. Cliquer sur **Import**
 
-### 3.2 Configurer les variables d'environnement
+### 3.2 Configuration du framework
+
+**Le projet inclut `vercel.json` pour la détection automatique :**
+
+```json
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install"
+}
+```
+
+**⚠️ Configuration Vercel - NE PAS MODIFIER :**
+
+- ✅ **Framework Preset:** Next.js (auto-détecté)
+- ✅ **Build Command:** `npm run build`
+- ✅ **Output Directory:** `.next` (auto-détecté, **ne pas mettre "public"**)
+- ✅ **Install Command:** `npm install`
+- ✅ **Node.js Version:** 18.x (recommandé)
+
+> **Note importante :** Si vous voyez l'erreur "No Output Directory named public found", c'est que Vercel n'a pas détecté Next.js correctement. Le fichier `vercel.json` force la détection. Ne jamais définir manuellement l'output directory pour Next.js.
+
+### 3.3 Configurer les variables d'environnement
 
 Dans la section **Environment Variables**, ajouter:
 
@@ -65,11 +88,18 @@ RESEND_API_KEY=votre_resend_api_key
 EMAIL_FROM=ASSEP <noreply@votredomaine.fr>
 ```
 
-### 3.3 Déployer
+### 3.4 Déployer
 
 1. Cliquer sur **Deploy**
 2. Attendre la fin du build (~2-3 minutes)
 3. Vercel vous donne une URL de production: `https://assep.vercel.app`
+
+**Si le build échoue avec "No Output Directory named public" :**
+- Vérifier que `vercel.json` existe à la racine
+- Dans Vercel Dashboard → Project Settings → General :
+  - Framework Preset doit être "Next.js"
+  - Output Directory doit être vide ou `.next`
+- Redéployer depuis le dashboard
 
 ## Étape 4: Créer le premier admin
 
