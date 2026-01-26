@@ -1,3 +1,43 @@
+# ASSEP - Site Associatif École Hubert Reeves
+
+**Projet Next.js + Supabase pour l'ASSEP (Association de Soutien et d'Entraide Parents)**
+École Hubert Reeves - Champagnole
+
+---
+
+## 🚀 Démarrage rapide
+
+```bash
+# Installation
+npm install
+
+# Configurer les variables d'environnement
+cp .env.example .env.local
+# Éditer .env.local et remplir les valeurs
+
+# Lancer en développement
+npm run dev
+```
+
+📖 **Guide complet:** voir [SETUP.md](./SETUP.md)
+
+## 🛠️ Commandes disponibles
+
+```bash
+npm run dev       # Lancer le serveur de développement
+npm run build     # Build de production
+npm start         # Lancer après build
+npm run doctor    # Diagnostic santé du projet
+```
+
+## ✅ Statut du projet
+
+Toutes les fonctionnalités du cahier des charges ci-dessous ont été implémentées.
+
+---
+
+# 📋 Cahier des charges (source de vérité)
+
 0) Contexte & règles non négociables
 
 Projet: site ASSEP (École Hubert Reeves, Champagnole) avec authentification + rôles + gestion événements/bénévoles/buvette/trésorerie/communications/dons.
