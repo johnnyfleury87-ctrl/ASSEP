@@ -5,7 +5,29 @@
 
 ---
 
-## 🚀 Démarrage rapide
+## � Prérequis
+
+**Versions Node.js et npm :**
+- Node.js >= 18.17.0
+- npm >= 9.0.0
+
+Vérifier vos versions :
+```bash
+node --version  # doit afficher v18.17.0 ou supérieur
+npm --version   # doit afficher 9.0.0 ou supérieur
+```
+
+**Stack technique :**
+- **Next.js 14.2.35** (Pages Router, pas App Router)
+- **ESLint 8.57.1** + **eslint-config-next 14.2.35** (versions alignées)
+- Supabase 2.39.0
+- React 18.2.0
+
+> **Note :** Les versions de `next` et `eslint-config-next` sont verrouillées à `14.2.35` (sans `^`) pour éviter les conflits de peer dependencies avec ESLint. Voir [#deps-rationale](#rationale-des-versions) pour détails.
+
+---
+
+## �🚀 Démarrage rapide
 
 ```bash
 # Installation
@@ -549,3 +571,68 @@ RLS: public peut s’inscrire bénévole mais ne peut rien lire de sensible
 trésorerie modifiable uniquement trésorier/vice/president/vice
 
 FIN.# ASSEP
+---
+
+## 📚 Documentation complète
+
+- [SETUP.md](./SETUP.md) - Installation locale pas-à-pas
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - Déploiement sur Vercel
+- [TESTING.md](./TESTING.md) - Scénarios de test
+- [CHECKLIST.md](./CHECKLIST.md) - Liste des livrables
+- [COMMANDS.md](./COMMANDS.md) - Aide-mémoire commandes
+- [AUDIT-2026-01-26.md](./AUDIT-2026-01-26.md) - Audit sécurité complet
+- [RESUME-AUDIT.md](./RESUME-AUDIT.md) - Synthèse audit & corrections
+
+---
+
+## 🔍 Rationale des versions {#deps-rationale}
+
+### Pourquoi Next.js 14.2.35 (sans `^`) ?
+
+**Problème rencontré :**
+- `npm audit fix --force` avait mis à jour `eslint-config-next` vers `16.1.4`
+- Cette version demande `eslint@>=9.0.0` comme peer dependency
+- Le projet utilise `eslint@8.57.1` (stable)
+- → Conflit de peer dependency bloquant le build local et Vercel
+
+**Solution appliquée :**
+```json
+{
+  "dependencies": {
+    "next": "14.2.35"  // verrouillé (pas de ^)
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-next": "14.2.35"  // aligné avec next
+  },
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.0.0"
+  }
+}
+```
+
+**Avantages :**
+- ✅ `eslint-config-next@14.2.35` accepte `eslint@^8.0.0`
+- ✅ Versions Next.js et eslint-config-next alignées
+- ✅ Build local et Vercel fonctionnent sans `--force` ou `--legacy-peer-deps`
+- ✅ Sécurité : Next.js 14.2.35 inclut tous les patchs critiques (SSRF, Auth bypass corrigés)
+
+**Vulnérabilités résiduelles :**
+- `glob@10.2.0-10.4.5` (high) : utilisé uniquement par eslint-config-next (dev-time)
+- Impact : aucun en production (dev dependency uniquement, pas d'exécution CLI)
+- Note : corrigé dans eslint-config-next 16.x, mais nécessiterait eslint 9.x
+
+### Migration future vers ESLint 9
+
+Pour upgrader vers ESLint 9 (quand prêt) :
+```bash
+npm install eslint@^9.0.0 eslint-config-next@^16.0.0
+npm run build  # vérifier que tout compile
+```
+
+---
+
+## 📄 Licence
+
+Projet interne ASSEP - École Hubert Reeves

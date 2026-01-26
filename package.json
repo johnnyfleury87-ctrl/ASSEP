@@ -11,14 +11,18 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
-    "next": "^14.2.35",
+    "next": "14.2.35",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "resend": "^3.0.0"
   },
   "devDependencies": {
-    "eslint": "^8.56.0",
-    "eslint-config-next": "^16.1.4"
+    "eslint": "^8.57.1",
+    "eslint-config-next": "14.2.35"
+  },
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.0.0"
   }
 }
