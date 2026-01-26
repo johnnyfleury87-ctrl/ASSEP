@@ -112,7 +112,7 @@ export default function JetcUsersManagement() {
         throw new Error(data.error || 'Erreur lors de la création')
       }
 
-      setMessage(`Utilisateur créé avec succès ! Mot de passe temporaire : ${data.user.temporary_password}`)
+      setMessage(`Utilisateur créé avec succès ! Un email a été envoyé avec le mot de passe temporaire : ASSEP1234!`)
       
       // Reset form
       setFormData({
@@ -125,7 +125,7 @@ export default function JetcUsersManagement() {
       // Recharger la liste
       await loadUsers(session.user.access_token)
     } catch (err) {
-      console.error('Error creating user:', err)
+      // Ne pas logger l'erreur complète côté client (peut contenir des données sensibles)
       setError(err.message)
     } finally {
       setCreating(false)

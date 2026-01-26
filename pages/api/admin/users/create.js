@@ -3,6 +3,7 @@
 
 import { supabaseServer } from '../../../../lib/supabaseServer'
 import { supabase } from '../../../../lib/supabaseClient'
+import { secureError } from '../../../../lib/security'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -58,7 +59,7 @@ export default async function handler(req, res) {
     })
 
     if (createError) {
-      console.error('Error creating user:', createError)
+      secureError('Error creating user:', createError)
       return res.status(500).json({ 
         error: 'Erreur lors de la création du user',
         details: createError.message
@@ -99,10 +100,11 @@ export default async function handler(req, res) {
           })
           .eq('id', newUser.user.id)
       } else {
-        console.error('Error creating profile:', profileCreateError)
+        secureError('Error creating profile:', profileCreateError)
       }
     }
 
+    // ⚠️ NE JAMAIS renvoyer le password dans la réponse
     return res.status(201).json({
       message: 'Utilisateur créé avec succès',
       user: {
@@ -111,12 +113,11 @@ export default async function handler(req, res) {
         first_name,
         last_name,
         role: userRole,
-        temporary_password: 'ASSEP1234!',
         must_change_password: true
       }
     })
   } catch (error) {
-    console.error('Unexpected error:', error)
+    secureError('Unexpected error:', error)
     return res.status(500).json({ 
       error: 'Erreur serveur',
       details: error.message

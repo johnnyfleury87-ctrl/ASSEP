@@ -104,10 +104,19 @@ node scripts/supabase-verify.js
 
 1. Allez dans le dashboard **Supabase** → **Authentication** → **Users**
 2. Cliquez sur **Add user** → **Create new user**
-3. Entrez l'email de l'administrateur JETC (ex: `admin@jetc-solution.fr`)
+3. Entrez l'email de l'administrateur JETC (ex: `contact@jetc-immo.ch`)
 4. Définissez un mot de passe temporaire
-5. **Cochez** "Auto Confirm User" pour éviter l'email de confirmation
-6. ✅ Le profil est créé automatiquement par le trigger `on_auth_user_created`
+5. ✅ **IMPORTANT** : **Cochez "Auto Confirm User"** pour éviter l'email de confirmation
+6. Le profil est créé automatiquement par le trigger `on_auth_user_created`
+
+> **⚠️ Si vous oubliez de cocher "Auto Confirm User"**, le user sera en "Waiting for verification" et ne pourra pas se connecter. Pour corriger :
+> 
+> ```sql
+> -- Dans SQL Editor, exécutez supabase/scripts/confirm-email.sql
+> -- Ou directement :
+> UPDATE auth.users SET email_confirmed_at=NOW(), confirmed_at=NOW() 
+> WHERE email='contact@jetc-immo.ch';
+> ```
 
 ### Étape 2 : Promouvoir en JETC admin
 
@@ -122,7 +131,8 @@ node scripts/supabase-verify.js
 2. Accédez à la page de gestion : `/dashboard/jetc/users`
 3. Utilisez le formulaire pour créer tous les autres utilisateurs (bureau, parents, etc.)
 4. Le mot de passe temporaire **ASSEP1234!** est automatiquement attribué
-5. Les utilisateurs devront le changer lors de leur première connexion
+5. ✅ **Les utilisateurs sont auto-confirmés** grâce à `email_confirm: true` dans l'API
+6. Les utilisateurs devront changer leur mot de passe lors de leur première connexion
 
 ### Étape 4 : Vérification de l'installation
 
@@ -173,6 +183,30 @@ Cette migration :
 - Migre les données `full_name` existantes vers `first_name`/`last_name`
 - Rend le trigger idempotent avec `ON CONFLICT DO UPDATE`
 
+#### Utilisateurs en "Waiting for verification" (login impossible)
+
+**Cause :** L'utilisateur n'a pas été confirmé lors de la création (case "Auto Confirm User" non cochée).
+
+**Symptôme :** Le user apparaît avec un badge "Waiting for verification" dans Supabase Auth, et ne peut pas se connecter à `/login`.
+
+**Solution 1 - Via Dashboard :**
+1. Supabase → **Authentication** → **Users**
+2. Cliquez sur l'utilisateur concerné
+3. Bouton **"Confirm user"**
+
+**Solution 2 - Via SQL :**
+```sql
+-- Dans SQL Editor, exécutez supabase/scripts/confirm-email.sql
+-- Ou directement (remplacez l'email) :
+UPDATE auth.users 
+SET email_confirmed_at = NOW(), confirmed_at = NOW() 
+WHERE email = 'contact@jetc-immo.ch';
+```
+
+**Prévention :**
+- ✅ Dashboard : Toujours cocher **"Auto Confirm User"** lors de la création manuelle
+- ✅ API : Le paramètre `email_confirm: true` est déjà configuré dans `/api/admin/users/create`
+
 #### Profils manquants pour utilisateurs existants
 
 Si des utilisateurs ont été créés avant la migration 0008 et n'ont pas de profil :
@@ -199,6 +233,7 @@ Ce script :
 - **Scripts SQL** :
   - [supabase/scripts/promote-jetc-admin.sql](supabase/scripts/promote-jetc-admin.sql) : Promotion en admin
   - [supabase/scripts/repair-profiles.sql](supabase/scripts/repair-profiles.sql) : Réparation des profils
+  - [supabase/scripts/confirm-email.sql](supabase/scripts/confirm-email.sql) : Confirmation manuelle d'email
 
 - **API** : [pages/api/admin/users/create.js](pages/api/admin/users/create.js)
   - Endpoint POST protégé par Bearer token
