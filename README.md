@@ -12,12 +12,20 @@
 npm install
 
 # Configurer les variables d'environnement
-cp .env.example .env.local
+cp .env.local.example .env.local
 # Éditer .env.local et remplir les valeurs
 
 # Lancer en développement
 npm run dev
 ```
+
+> **⚠️ IMPORTANT - Configuration environnement**
+> 
+> **Créez `.env.local` à la racine du projet** et copiez le contenu de `.env.local.example`, puis **remplissez les valeurs** depuis le dashboard **Supabase** / **Resend** / **HelloAsso**.
+> 
+> - `.env.example` → documentation générale des variables
+> - `.env.local.example` → **modèle exact à copier** (sans valeurs)
+> - `.env.local` → **fichier réel** avec vos clés (jamais committé)
 
 📖 **Guide complet:** voir [SETUP.md](./SETUP.md)
 
