@@ -229,17 +229,33 @@ export default function Dashboard() {
           )}
 
           {isAdmin && (
-            <Link href="/dashboard/bureau" style={{ 
-              padding: '20px',
-              backgroundColor: '#9C27B0',
-              color: 'white',
-              textDecoration: 'none',
-              borderRadius: '8px',
-              textAlign: 'center',
-              fontWeight: 'bold'
-            }}>
-              👥 Gestion Bureau
-            </Link>
+            <>
+              <Link href="/dashboard/bureau" style={{ 
+                padding: '20px',
+                backgroundColor: '#9C27B0',
+                color: 'white',
+                textDecoration: 'none',
+                borderRadius: '8px',
+                textAlign: 'center',
+                fontWeight: 'bold'
+              }}>
+                👥 Gestion Bureau
+              </Link>
+              
+              {profile.is_jetc_admin && (
+                <Link href="/dashboard/jetc/users" style={{ 
+                  padding: '20px',
+                  backgroundColor: '#673AB7',
+                  color: 'white',
+                  textDecoration: 'none',
+                  borderRadius: '8px',
+                  textAlign: 'center',
+                  fontWeight: 'bold'
+                }}>
+                  🔧 Gestion Utilisateurs (JETC)
+                </Link>
+              )}
+            </>
           )}
         </div>
       </section>

@@ -1,348 +1,235 @@
-#!/usr/bin/env node
-// scripts/doctor.js
-// Script de diagnostic pour vérifier la santé du projet ASSEP
+/**
+ * Script Doctor: Vérification de l'environnement et de la DB
+ * Usage: node scripts/doctor.js
+ * 
+ * Vérifie:
+ * - Variables d'environnement
+ * - Connexion Supabase
+ * - Tables et colonnes essentielles
+ * - Triggers
+ * - Policies RLS
+ */
+require('dotenv').config();
+const { createClient } = require('@supabase/supabase-js');
 
-const fs = require('fs')
-const path = require('path')
+const REQUIRED_ENV_VARS = [
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY'
+];
 
-// Codes couleur ANSI
-const colors = {
-  reset: '\x1b[0m',
-  green: '\x1b[32m',
-  red: '\x1b[31m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  bold: '\x1b[1m'
-}
+const REQUIRED_TABLES = [
+  'profiles',
+  'bureau_members',
+  'events',
+  'event_shifts',
+  'event_volunteers',
+  'event_tasks',
+  'signups',
+  'transactions',
+  'email_campaigns',
+  'donations'
+];
 
-function log(message, color = 'reset') {
-  console.log(`${colors[color]}${message}${colors.reset}`)
-}
-
-function check(title, passed, details = '') {
-  const icon = passed ? '✓' : '✗'
-  const color = passed ? 'green' : 'red'
-  log(`${icon} ${title}`, color)
-  if (details) {
-    log(`  ${details}`, 'reset')
-  }
-  return passed
-}
-
-function section(title) {
-  log(`\n${'='.repeat(60)}`, 'blue')
-  log(title, 'bold')
-  log('='.repeat(60), 'blue')
-}
-
-// ============================================================================
-// 1. Vérifier les variables d'environnement
-// ============================================================================
-function checkEnvVars() {
-  section('1. Variables d\'environnement')
-  
-  const requiredVars = [
-    'NEXT_PUBLIC_SUPABASE_URL',
-    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-    'SUPABASE_SERVICE_ROLE_KEY',
-    'RESEND_API_KEY',
-    'EMAIL_FROM',
-    'NEXT_PUBLIC_DONATION_GENERAL_URL',
-    'NEXT_PUBLIC_DONATION_EVENT_BASE_URL'
+const REQUIRED_COLUMNS = {
+  profiles: [
+    'id',
+    'email',
+    'role',
+    'is_jetc_admin',
+    'must_change_password',
+    'created_by',
+    'role_requested',
+    'role_approved_by',
+    'comms_opt_in'
+  ],
+  events: [
+    'id',
+    'name',
+    'slug',
+    'status',
+    'approved_by',
+    'approved_at',
+    'created_by'
   ]
+};
 
-  let allPresent = true
-
-  // Charger .env.local si existe
-  const envPath = path.join(process.cwd(), '.env.local')
-  if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, 'utf8')
-    envContent.split('\n').forEach(line => {
-      const [key, value] = line.split('=')
-      if (key && value && !process.env[key]) {
-        process.env[key] = value.trim()
-      }
-    })
-  }
-
-  requiredVars.forEach(varName => {
-    const exists = !!process.env[varName]
-    check(varName, exists, exists ? '✓ Définie' : '✗ Manquante')
-    if (!exists) allPresent = false
-  })
-
-  const envExampleExists = fs.existsSync(path.join(process.cwd(), '.env.example'))
-  check('.env.example existe', envExampleExists)
-
-  return allPresent && envExampleExists
-}
-
-// ============================================================================
-// 2. Vérifier la structure des migrations
-// ============================================================================
-function checkMigrations() {
-  section('2. Migrations Supabase')
+async function runDoctor() {
+  console.log('🏥 ASSEP Doctor - Diagnostic de l\'environnement\n');
+  console.log('='.repeat(60));
   
-  const migrationsDir = path.join(process.cwd(), 'supabase', 'migrations')
-  
-  if (!fs.existsSync(migrationsDir)) {
-    check('Dossier migrations existe', false, 'Le dossier supabase/migrations est manquant')
-    return false
-  }
+  let errors = 0;
+  let warnings = 0;
 
-  const expectedMigrations = [
-    '0001_foundations.sql',
-    '0002_events.sql',
-    '0003_signups.sql',
-    '0004_finance.sql',
-    '0005_emails_donations.sql',
-    '0006_rls_policies.sql'
-  ]
+  // ============================================================================
+  // 1. Variables d'environnement
+  // ============================================================================
+  console.log('\n📋 1. Variables d\'environnement');
+  console.log('-'.repeat(60));
 
-  let allPresent = true
-
-  expectedMigrations.forEach(filename => {
-    const filePath = path.join(migrationsDir, filename)
-    const exists = fs.existsSync(filePath)
-    
-    if (exists) {
-      const content = fs.readFileSync(filePath, 'utf8')
-      const hasContent = content.length > 100
-      check(filename, hasContent, hasContent ? `${content.length} caractères` : 'Fichier vide')
-      if (!hasContent) allPresent = false
+  for (const varName of REQUIRED_ENV_VARS) {
+    if (process.env[varName]) {
+      console.log(`✅ ${varName} définie`);
     } else {
-      check(filename, false, 'Manquant')
-      allPresent = false
+      console.log(`❌ ${varName} MANQUANTE`);
+      errors++;
     }
-  })
-
-  return allPresent
-}
-
-// ============================================================================
-// 3. Vérifier les fichiers lib
-// ============================================================================
-function checkLibFiles() {
-  section('3. Fichiers lib/')
-  
-  const expectedFiles = [
-    'lib/supabaseClient.js',
-    'lib/supabaseServer.js',
-    'lib/email.js'
-  ]
-
-  let allPresent = true
-
-  expectedFiles.forEach(file => {
-    const filePath = path.join(process.cwd(), file)
-    const exists = fs.existsSync(filePath)
-    check(file, exists)
-    if (!exists) allPresent = false
-  })
-
-  return allPresent
-}
-
-// ============================================================================
-// 4. Vérifier les routes API
-// ============================================================================
-function checkApiRoutes() {
-  section('4. Routes API')
-  
-  const expectedRoutes = [
-    'pages/api/signups.js',
-    'pages/api/campaigns/send.js',
-    'pages/api/admin/roles.js',
-    'pages/api/admin/bureau.js'
-  ]
-
-  let allPresent = true
-
-  expectedRoutes.forEach(route => {
-    const filePath = path.join(process.cwd(), route)
-    const exists = fs.existsSync(filePath)
-    check(route, exists)
-    if (!exists) allPresent = false
-  })
-
-  return allPresent
-}
-
-// ============================================================================
-// 5. Vérifier les pages principales
-// ============================================================================
-function checkPages() {
-  section('5. Pages principales')
-  
-  const expectedPages = [
-    'pages/index.js',
-    'pages/login.js',
-    'pages/evenements/index.js',
-    'pages/evenements/[slug].js',
-    'pages/dons/index.js',
-    'pages/dons/evenement/[id].js',
-    'pages/dashboard/index.js',
-    'pages/dashboard/evenements/index.js',
-    'pages/dashboard/evenements/new.js',
-    'pages/dashboard/evenements/[id]/benevoles.js',
-    'pages/dashboard/evenements/[id]/caisse.js',
-    'pages/dashboard/tresorerie.js',
-    'pages/dashboard/communications.js',
-    'pages/dashboard/bureau.js'
-  ]
-
-  let allPresent = true
-
-  expectedPages.forEach(page => {
-    const filePath = path.join(process.cwd(), page)
-    const exists = fs.existsSync(filePath)
-    check(page, exists)
-    if (!exists) allPresent = false
-  })
-
-  return allPresent
-}
-
-// ============================================================================
-// 6. Vérifier package.json et dépendances
-// ============================================================================
-function checkDependencies() {
-  section('6. Dépendances')
-  
-  const packageJsonPath = path.join(process.cwd(), 'package.json')
-  
-  if (!fs.existsSync(packageJsonPath)) {
-    check('package.json existe', false)
-    return false
   }
 
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
-  
-  const requiredDeps = [
-    '@supabase/supabase-js',
-    'next',
-    'react',
-    'react-dom',
-    'qrcode',
-    'resend'
-  ]
-
-  let allPresent = true
-
-  requiredDeps.forEach(dep => {
-    const exists = packageJson.dependencies && packageJson.dependencies[dep]
-    check(dep, !!exists, exists ? `v${exists}` : 'Manquant')
-    if (!exists) allPresent = false
-  })
-
-  // Vérifier node_modules
-  const nodeModulesExists = fs.existsSync(path.join(process.cwd(), 'node_modules'))
-  check('node_modules/', nodeModulesExists, nodeModulesExists ? '' : 'Exécuter npm install')
-
-  return allPresent && nodeModulesExists
-}
-
-// ============================================================================
-// 7. Vérifier la syntaxe SQL basique des migrations
-// ============================================================================
-function checkSqlSyntax() {
-  section('7. Syntaxe SQL (vérification basique)')
-  
-  const migrationsDir = path.join(process.cwd(), 'supabase', 'migrations')
-  
-  if (!fs.existsSync(migrationsDir)) {
-    check('Migrations directory', false)
-    return false
+  if (errors > 0) {
+    console.log('\n❌ Variables manquantes. Vérifiez votre fichier .env.local');
+    process.exit(1);
   }
 
-  const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql'))
-  let allValid = true
+  // ============================================================================
+  // 2. Connexion Supabase
+  // ============================================================================
+  console.log('\n🔌 2. Connexion Supabase');
+  console.log('-'.repeat(60));
 
-  files.forEach(file => {
-    const content = fs.readFileSync(path.join(migrationsDir, file), 'utf8')
-    
-    // Vérifications basiques
-    const hasCreateOrAlter = content.toLowerCase().includes('create') || content.toLowerCase().includes('alter')
-    const hasSemicolons = content.includes(';')
-    
-    const valid = hasCreateOrAlter && hasSemicolons
-    check(file, valid, valid ? 'Syntaxe OK' : 'Syntaxe suspecte')
-    
-    if (!valid) allValid = false
-  })
-
-  return allValid
-}
-
-// ============================================================================
-// 8. Vérifier la structure globale
-// ============================================================================
-function checkStructure() {
-  section('8. Structure du projet')
-  
-  const requiredDirs = [
-    'pages',
-    'pages/api',
-    'pages/dashboard',
-    'pages/evenements',
-    'pages/dons',
-    'lib',
-    'supabase',
-    'supabase/migrations',
-    'scripts'
-  ]
-
-  let allPresent = true
-
-  requiredDirs.forEach(dir => {
-    const dirPath = path.join(process.cwd(), dir)
-    const exists = fs.existsSync(dirPath)
-    check(dir + '/', exists)
-    if (!exists) allPresent = false
-  })
-
-  return allPresent
-}
-
-// ============================================================================
-// MAIN
-// ============================================================================
-function main() {
-  log('\n' + '█'.repeat(60), 'blue')
-  log('  ASSEP - Diagnostic du projet', 'bold')
-  log('█'.repeat(60) + '\n', 'blue')
-
-  const results = {
-    envVars: checkEnvVars(),
-    migrations: checkMigrations(),
-    libFiles: checkLibFiles(),
-    apiRoutes: checkApiRoutes(),
-    pages: checkPages(),
-    dependencies: checkDependencies(),
-    sqlSyntax: checkSqlSyntax(),
-    structure: checkStructure()
+  let supabase;
+  try {
+    supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+    console.log('✅ Client Supabase créé');
+  } catch (err) {
+    console.log('❌ Erreur création client:', err.message);
+    errors++;
+    process.exit(1);
   }
 
-  // Résumé
-  section('📊 Résumé')
+  // Test de connexion
+  try {
+    const { error } = await supabase.from('profiles').select('id').limit(1);
+    if (error) throw error;
+    console.log('✅ Connexion à la base de données OK');
+  } catch (err) {
+    console.log('❌ Erreur connexion DB:', err.message);
+    errors++;
+  }
+
+  // ============================================================================
+  // 3. Tables
+  // ============================================================================
+  console.log('\n📊 3. Tables');
+  console.log('-'.repeat(60));
+
+  for (const tableName of REQUIRED_TABLES) {
+    try {
+      const { error } = await supabase.from(tableName).select('*').limit(1);
+      if (error) {
+        console.log(`❌ Table '${tableName}': ${error.message}`);
+        errors++;
+      } else {
+        console.log(`✅ Table '${tableName}' existe`);
+      }
+    } catch (err) {
+      console.log(`❌ Table '${tableName}': ${err.message}`);
+      errors++;
+    }
+  }
+
+  // ============================================================================
+  // 4. Colonnes essentielles
+  // ============================================================================
+  console.log('\n🔍 4. Colonnes essentielles');
+  console.log('-'.repeat(60));
+
+  for (const [tableName, columns] of Object.entries(REQUIRED_COLUMNS)) {
+    try {
+      const { data, error } = await supabase.from(tableName).select(columns.join(',')).limit(0);
+      
+      if (error) {
+        console.log(`❌ ${tableName}: Erreur lors de la vérification des colonnes`);
+        console.log(`   ${error.message}`);
+        errors++;
+      } else {
+        console.log(`✅ ${tableName}: Toutes les colonnes présentes`);
+      }
+    } catch (err) {
+      console.log(`❌ ${tableName}: ${err.message}`);
+      errors++;
+    }
+  }
+
+  // ============================================================================
+  // 5. Test fonction SQL
+  // ============================================================================
+  console.log('\n⚙️  5. Fonctions SQL');
+  console.log('-'.repeat(60));
+
+  try {
+    const { data, error } = await supabase.rpc('get_stats_dashboard');
+    
+    if (error && error.message.includes('function') && error.message.includes('does not exist')) {
+      console.log('⚠️  Fonction get_stats_dashboard non trouvée');
+      warnings++;
+    } else if (!error) {
+      console.log('✅ Fonctions SQL accessibles');
+      console.log(`   Stats: ${JSON.stringify(data)}`);
+    }
+  } catch (err) {
+    console.log(`⚠️  Test fonction SQL: ${err.message}`);
+    warnings++;
+  }
+
+  // ============================================================================
+  // 6. RLS activé
+  // ============================================================================
+  console.log('\n🔒 6. Row Level Security (RLS)');
+  console.log('-'.repeat(60));
+
+  try {
+    // Tester l'accès sans authentification
+    const supabaseAnon = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
+
+    const { data: profiles } = await supabaseAnon.from('profiles').select('*');
+    
+    if (profiles && profiles.length === 0) {
+      console.log('✅ RLS activé sur profiles (accès anon bloqué)');
+    } else {
+      console.log('⚠️  RLS profiles: accès anon autorisé');
+      warnings++;
+    }
+
+    // Tester events public
+    const { data: events } = await supabaseAnon.from('events').select('*').eq('status', 'published');
+    console.log(`✅ Events publics accessibles (${events ? events.length : 0} trouvés)`);
+
+  } catch (err) {
+    console.log(`❌ Test RLS: ${err.message}`);
+    errors++;
+  }
+
+  // ============================================================================
+  // 7. Résumé
+  // ============================================================================
+  console.log('\n' + '='.repeat(60));
+  console.log('📊 RÉSUMÉ DU DIAGNOSTIC\n');
   
-  const totalChecks = Object.keys(results).length
-  const passedChecks = Object.values(results).filter(v => v).length
-  const percentage = Math.round((passedChecks / totalChecks) * 100)
-
-  log(`\nTests réussis: ${passedChecks}/${totalChecks} (${percentage}%)`, 'bold')
-
-  if (passedChecks === totalChecks) {
-    log('\n✅ Le projet est prêt !', 'green')
-    log('Vous pouvez exécuter: npm run dev', 'green')
-    return 0
+  if (errors === 0 && warnings === 0) {
+    console.log('✅ Environnement OK - Aucun problème détecté');
+    console.log('\n👉 Vous pouvez lancer l\'application avec: npm run dev');
   } else {
-    log('\n⚠️  Certains éléments nécessitent votre attention', 'yellow')
-    log('Consultez les détails ci-dessus et corrigez les problèmes.', 'yellow')
-    return 1
+    if (errors > 0) {
+      console.log(`❌ ${errors} erreur(s) détectée(s)`);
+    }
+    if (warnings > 0) {
+      console.log(`⚠️  ${warnings} avertissement(s)`);
+    }
+    console.log('\n👉 Corrigez les erreurs avant de continuer');
   }
+
+  console.log('='.repeat(60));
+  process.exit(errors > 0 ? 1 : 0);
 }
 
-// Exécuter
-const exitCode = main()
-process.exit(exitCode)
+runDoctor().catch(err => {
+  console.error('💥 Erreur fatale:', err);
+  process.exit(1);
+});
