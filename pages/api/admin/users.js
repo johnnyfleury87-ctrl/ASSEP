@@ -15,21 +15,29 @@ export default async function handler(req, res) {
     }
 
     const token = authHeader.replace('Bearer ', '');
+    
+    // Vérifier le token ET récupérer l'utilisateur
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
+      console.error('Auth error:', authError);
       return res.status(401).json({ error: 'Token invalide' });
     }
 
-    // Vérifier que l'utilisateur est JETC admin ou président/vice
+    // Utiliser supabaseAdmin avec service role pour contourner RLS
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('is_jetc_admin, role')
       .eq('id', user.id)
       .single();
 
-    if (profileError || !profile) {
-      return res.status(403).json({ error: 'Profil non trouvé' });
+    if (profileError) {
+      console.error('Profile error:', profileError);
+      return res.status(403).json({ error: 'Profil non trouvé: ' + profileError.message });
+    }
+
+    if (!profile) {
+      return res.status(403).json({ error: 'Profil non trouvé - aucune donnée retournée' });
     }
 
     const isAdmin = profile.is_jetc_admin || ['president', 'vice_president'].includes(profile.role);
