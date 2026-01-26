@@ -25,20 +25,24 @@ export default async function handler(req, res) {
     }
 
     // Utiliser supabaseAdmin avec service role pour contourner RLS
-    const { data: profile, error: profileError } = await supabaseAdmin
+    // Note: utiliser .limit(1) au lieu de .single() pour éviter l'erreur "Cannot coerce"
+    // en cas de doublons dans la table profiles
+    const { data: profiles, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('is_jetc_admin, role')
       .eq('id', user.id)
-      .single();
+      .limit(1);
 
     if (profileError) {
       console.error('Profile error:', profileError);
-      return res.status(403).json({ error: 'Profil non trouvé: ' + profileError.message });
+      return res.status(403).json({ error: 'Erreur lecture profil: ' + profileError.message });
     }
 
-    if (!profile) {
-      return res.status(403).json({ error: 'Profil non trouvé - aucune donnée retournée' });
+    if (!profiles || profiles.length === 0) {
+      return res.status(403).json({ error: 'Aucun profil trouvé pour cet utilisateur' });
     }
+
+    const profile = profiles[0];
 
     const isAdmin = profile.is_jetc_admin || ['president', 'vice_president'].includes(profile.role);
     if (!isAdmin) {
