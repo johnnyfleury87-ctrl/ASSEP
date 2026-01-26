@@ -8,8 +8,8 @@ export default function EventsList({ upcomingEvents, pastEvents }) {
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
       <header style={{ marginBottom: '40px' }}>
-        <Link href="/">
-          <a style={{ color: '#4CAF50' }}>← Retour à l'accueil</a>
+        <Link href="/" style={{ color: '#4CAF50' }}>
+          ← Retour à l'accueil
         </Link>
         <h1 style={{ marginTop: '20px' }}>Tous les événements</h1>
       </header>
@@ -37,18 +37,16 @@ export default function EventsList({ upcomingEvents, pastEvents }) {
                   hour: '2-digit',
                   minute: '2-digit'
                 })}</p>
-                <Link href={`/evenements/${event.slug}`}>
-                  <a style={{ 
-                    display: 'inline-block',
-                    marginTop: '10px',
-                    padding: '10px 20px',
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    textDecoration: 'none',
-                    borderRadius: '4px'
-                  }}>
-                    Voir les détails
-                  </a>
+                <Link href={`/evenements/${event.slug}`} style={{ 
+                  display: 'inline-block',
+                  marginTop: '10px',
+                  padding: '10px 20px',
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  textDecoration: 'none',
+                  borderRadius: '4px'
+                }}>
+                  Voir les détails
                 </Link>
               </div>
             ))}

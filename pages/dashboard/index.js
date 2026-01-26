@@ -120,8 +120,8 @@ export default function Dashboard() {
           </p>
         </div>
         <div>
-          <Link href="/">
-            <a style={{ marginRight: '20px', color: '#4CAF50' }}>Voir le site public</a>
+          <Link href="/" style={{ marginRight: '20px', color: '#4CAF50' }}>
+            Voir le site public
           </Link>
           <button 
             onClick={handleLogout}
@@ -184,69 +184,61 @@ export default function Dashboard() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
           {canManageEvents && (
             <>
-              <Link href="/dashboard/evenements">
-                <a style={{ 
-                  padding: '20px',
-                  backgroundColor: '#4CAF50',
-                  color: 'white',
-                  textDecoration: 'none',
-                  borderRadius: '8px',
-                  textAlign: 'center',
-                  fontWeight: 'bold'
-                }}>
-                  📅 Gérer les événements
-                </a>
+              <Link href="/dashboard/evenements" style={{ 
+                padding: '20px',
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                textDecoration: 'none',
+                borderRadius: '8px',
+                textAlign: 'center',
+                fontWeight: 'bold'
+              }}>
+                📅 Gérer les événements
               </Link>
             </>
           )}
 
           {canManageFinance && (
             <>
-              <Link href="/dashboard/tresorerie">
-                <a style={{ 
-                  padding: '20px',
-                  backgroundColor: '#2196F3',
-                  color: 'white',
-                  textDecoration: 'none',
-                  borderRadius: '8px',
-                  textAlign: 'center',
-                  fontWeight: 'bold'
-                }}>
-                  💰 Trésorerie
-                </a>
+              <Link href="/dashboard/tresorerie" style={{ 
+                padding: '20px',
+                backgroundColor: '#2196F3',
+                color: 'white',
+                textDecoration: 'none',
+                borderRadius: '8px',
+                textAlign: 'center',
+                fontWeight: 'bold'
+              }}>
+                💰 Trésorerie
               </Link>
             </>
           )}
 
           {(isAdmin || ['secretaire', 'vice_secretaire'].includes(profile.role)) && (
-            <Link href="/dashboard/communications">
-              <a style={{ 
-                padding: '20px',
-                backgroundColor: '#FF9800',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '8px',
-                textAlign: 'center',
-                fontWeight: 'bold'
-              }}>
-                ✉️ Communications
-              </a>
+            <Link href="/dashboard/communications" style={{ 
+              padding: '20px',
+              backgroundColor: '#FF9800',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: '8px',
+              textAlign: 'center',
+              fontWeight: 'bold'
+            }}>
+              ✉️ Communications
             </Link>
           )}
 
           {isAdmin && (
-            <Link href="/dashboard/bureau">
-              <a style={{ 
-                padding: '20px',
-                backgroundColor: '#9C27B0',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '8px',
-                textAlign: 'center',
-                fontWeight: 'bold'
-              }}>
-                👥 Gestion Bureau
-              </a>
+            <Link href="/dashboard/bureau" style={{ 
+              padding: '20px',
+              backgroundColor: '#9C27B0',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: '8px',
+              textAlign: 'center',
+              fontWeight: 'bold'
+            }}>
+              👥 Gestion Bureau
             </Link>
           )}
         </div>

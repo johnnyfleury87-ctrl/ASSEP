@@ -50,8 +50,8 @@ export default function Communications() {
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
       <header style={{ marginBottom: '40px' }}>
-        <Link href="/dashboard">
-          <a style={{ color: '#4CAF50' }}>← Retour au dashboard</a>
+        <Link href="/dashboard" style={{ color: '#4CAF50' }}>
+          ← Retour au dashboard
         </Link>
         <h1 style={{ marginTop: '20px' }}>Communications</h1>
         <p style={{ color: '#666' }}>

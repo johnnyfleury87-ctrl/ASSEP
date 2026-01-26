@@ -56,23 +56,21 @@ export default function EventsManagement() {
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
       <header style={{ marginBottom: '40px' }}>
-        <Link href="/dashboard">
-          <a style={{ color: '#4CAF50' }}>← Retour au dashboard</a>
+        <Link href="/dashboard" style={{ color: '#4CAF50' }}>
+          ← Retour au dashboard
         </Link>
         <h1 style={{ marginTop: '20px' }}>Gestion des événements</h1>
-        <Link href="/dashboard/evenements/new">
-          <a style={{ 
-            display: 'inline-block',
-            padding: '12px 24px',
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            textDecoration: 'none',
-            borderRadius: '4px',
-            fontWeight: 'bold',
-            marginTop: '20px'
-          }}>
-            ➕ Créer un nouvel événement
-          </a>
+        <Link href="/dashboard/evenements/new" style={{ 
+          display: 'inline-block',
+          padding: '12px 24px',
+          backgroundColor: '#4CAF50',
+          color: 'white',
+          textDecoration: 'none',
+          borderRadius: '4px',
+          fontWeight: 'bold',
+          marginTop: '20px'
+        }}>
+          ➕ Créer un nouvel événement
         </Link>
       </header>
 
@@ -109,29 +107,25 @@ export default function EventsManagement() {
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <Link href={`/dashboard/evenements/${event.id}/benevoles`}>
-                    <a style={{ 
-                      padding: '8px 16px',
-                      backgroundColor: '#2196F3',
-                      color: 'white',
-                      textDecoration: 'none',
-                      borderRadius: '4px',
-                      fontSize: '14px'
-                    }}>
-                      Bénévoles
-                    </a>
+                  <Link href={`/dashboard/evenements/${event.id}/benevoles`} style={{ 
+                    padding: '8px 16px',
+                    backgroundColor: '#2196F3',
+                    color: 'white',
+                    textDecoration: 'none',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}>
+                    Bénévoles
                   </Link>
-                  <Link href={`/dashboard/evenements/${event.id}/caisse`}>
-                    <a style={{ 
-                      padding: '8px 16px',
-                      backgroundColor: '#FF9800',
-                      color: 'white',
-                      textDecoration: 'none',
-                      borderRadius: '4px',
-                      fontSize: '14px'
-                    }}>
-                      Caisse
-                    </a>
+                  <Link href={`/dashboard/evenements/${event.id}/caisse`} style={{ 
+                    padding: '8px 16px',
+                    backgroundColor: '#FF9800',
+                    color: 'white',
+                    textDecoration: 'none',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}>
+                    Caisse
                   </Link>
                 </div>
               </div>

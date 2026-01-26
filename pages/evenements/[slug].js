@@ -65,7 +65,7 @@ export default function EventDetail({ event, buvette, paymentMethods, tasksWithS
     return (
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
         <p>Événement non trouvé</p>
-        <Link href="/evenements"><a>← Retour aux événements</a></Link>
+        <Link href="/evenements">← Retour aux événements</Link>
       </div>
     )
   }
@@ -73,8 +73,8 @@ export default function EventDetail({ event, buvette, paymentMethods, tasksWithS
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
       <header style={{ marginBottom: '40px' }}>
-        <Link href="/evenements">
-          <a style={{ color: '#4CAF50' }}>← Retour aux événements</a>
+        <Link href="/evenements" style={{ color: '#4CAF50' }}>
+          ← Retour aux événements
         </Link>
       </header>
 
@@ -303,19 +303,17 @@ export default function EventDetail({ event, buvette, paymentMethods, tasksWithS
             {(donationCounter.amount_cents_total / 100).toFixed(2)} € déjà collectés
           </p>
         )}
-        <Link href={`/dons/evenement/${event.id}`}>
-          <a style={{ 
-            display: 'inline-block',
-            marginTop: '15px',
-            padding: '12px 30px',
-            backgroundColor: 'white',
-            color: '#4CAF50',
-            textDecoration: 'none',
-            borderRadius: '4px',
-            fontWeight: 'bold'
-          }}>
-            Faire un don
-          </a>
+        <Link href={`/dons/evenement/${event.id}`} style={{ 
+          display: 'inline-block',
+          marginTop: '15px',
+          padding: '12px 30px',
+          backgroundColor: 'white',
+          color: '#4CAF50',
+          textDecoration: 'none',
+          borderRadius: '4px',
+          fontWeight: 'bold'
+        }}>
+          Faire un don
         </Link>
       </section>
     </div>

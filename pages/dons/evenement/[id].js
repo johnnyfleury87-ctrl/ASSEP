@@ -23,7 +23,7 @@ export default function DonsEvenement({ event, donationCounter }) {
     return (
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', textAlign: 'center' }}>
         <p>Événement non trouvé</p>
-        <Link href="/dons"><a>← Retour aux dons généraux</a></Link>
+        <Link href="/dons">← Retour aux dons généraux</Link>
       </div>
     )
   }
@@ -31,8 +31,8 @@ export default function DonsEvenement({ event, donationCounter }) {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', textAlign: 'center' }}>
       <header style={{ marginBottom: '40px' }}>
-        <Link href={`/evenements/${event.slug}`}>
-          <a style={{ color: '#4CAF50' }}>← Retour à l'événement</a>
+        <Link href={`/evenements/${event.slug}`} style={{ color: '#4CAF50' }}>
+          ← Retour à l'événement
         </Link>
       </header>
 
@@ -71,8 +71,8 @@ export default function DonsEvenement({ event, donationCounter }) {
       </p>
 
       <div style={{ marginTop: '40px' }}>
-        <Link href="/dons">
-          <a style={{ color: '#4CAF50' }}>Voir tous les moyens de soutenir l'ASSEP →</a>
+        <Link href="/dons" style={{ color: '#4CAF50' }}>
+          Voir tous les moyens de soutenir l'ASSEP →
         </Link>
       </div>
     </div>

@@ -104,8 +104,8 @@ export default function Login() {
       </form>
 
       <div style={{ textAlign: 'center', marginTop: '30px' }}>
-        <Link href="/">
-          <a style={{ color: '#4CAF50' }}>← Retour à l'accueil</a>
+        <Link href="/" style={{ color: '#4CAF50' }}>
+          ← Retour à l'accueil
         </Link>
       </div>
     </div>

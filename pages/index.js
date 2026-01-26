@@ -44,18 +44,16 @@ export default function Home({ events, bureau }) {
                   hour: '2-digit',
                   minute: '2-digit'
                 })}</p>
-                <Link href={`/evenements/${event.slug}`}>
-                  <a style={{ 
-                    display: 'inline-block',
-                    marginTop: '10px',
-                    padding: '10px 20px',
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    textDecoration: 'none',
-                    borderRadius: '4px'
-                  }}>
-                    Voir les détails et s'inscrire
-                  </a>
+                <Link href={`/evenements/${event.slug}`} style={{ 
+                  display: 'inline-block',
+                  marginTop: '10px',
+                  padding: '10px 20px',
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  textDecoration: 'none',
+                  borderRadius: '4px'
+                }}>
+                  Voir les détails et s'inscrire
                 </Link>
               </div>
             ))}
@@ -65,7 +63,7 @@ export default function Home({ events, bureau }) {
         )}
         <div style={{ marginTop: '20px' }}>
           <Link href="/evenements">
-            <a>Voir tous les événements →</a>
+            Voir tous les événements →
           </Link>
         </div>
       </section>
@@ -81,19 +79,17 @@ export default function Home({ events, bureau }) {
       }}>
         <h2>Soutenez l'ASSEP</h2>
         <p>Vos dons nous aident à financer des projets éducatifs et des sorties scolaires.</p>
-        <Link href="/dons">
-          <a style={{ 
-            display: 'inline-block',
-            marginTop: '10px',
-            padding: '12px 30px',
-            backgroundColor: 'white',
-            color: '#4CAF50',
-            textDecoration: 'none',
-            borderRadius: '4px',
-            fontWeight: 'bold'
-          }}>
-            Faire un don
-          </a>
+        <Link href="/dons" style={{ 
+          display: 'inline-block',
+          marginTop: '10px',
+          padding: '12px 30px',
+          backgroundColor: 'white',
+          color: '#4CAF50',
+          textDecoration: 'none',
+          borderRadius: '4px',
+          fontWeight: 'bold'
+        }}>
+          Faire un don
         </Link>
       </section>
 
@@ -128,7 +124,7 @@ export default function Home({ events, bureau }) {
       <footer style={{ textAlign: 'center', marginTop: '60px', paddingTop: '20px', borderTop: '1px solid #ddd', color: '#666' }}>
         <p>&copy; {new Date().getFullYear()} ASSEP - École Hubert Reeves, Champagnole</p>
         <p>
-          <Link href="/login"><a>Espace membres</a></Link>
+          <Link href="/login">Espace membres</Link>
         </p>
       </footer>
     </div>

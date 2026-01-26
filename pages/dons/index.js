@@ -21,8 +21,8 @@ export default function DonsGeneraux({ donationCounter }) {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', textAlign: 'center' }}>
       <header style={{ marginBottom: '40px' }}>
-        <Link href="/">
-          <a style={{ color: '#4CAF50' }}>← Retour à l'accueil</a>
+        <Link href="/" style={{ color: '#4CAF50' }}>
+          ← Retour à l'accueil
         </Link>
       </header>
 

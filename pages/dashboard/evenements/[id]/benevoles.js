@@ -94,8 +94,8 @@ export default function EventVolunteers() {
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
       <header style={{ marginBottom: '40px' }}>
-        <Link href="/dashboard/evenements">
-          <a style={{ color: '#4CAF50' }}>← Retour aux événements</a>
+        <Link href="/dashboard/evenements" style={{ color: '#4CAF50' }}>
+          ← Retour aux événements
         </Link>
         <h1 style={{ marginTop: '20px' }}>Bénévoles - {event.title}</h1>
         <button 
