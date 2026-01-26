@@ -25,7 +25,7 @@ export default function Hero() {
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.85) 0%, rgba(44, 62, 80, 0.85) 100%)',
+        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.85) 0%, rgba(147, 197, 253, 0.85) 100%)',
         zIndex: 1
       }} />
 
