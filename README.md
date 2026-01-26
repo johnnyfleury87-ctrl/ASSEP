@@ -78,6 +78,28 @@ Pour remplacer les images, copiez simplement vos nouvelles images PNG/JPG dans `
 
 **Workflow complet pour initialiser une nouvelle base de données :**
 
+### Étape 0 : Appliquer les migrations
+
+**IMPORTANT :** Avant de créer des utilisateurs, assurez-vous que toutes les migrations sont appliquées dans Supabase :
+
+1. Allez dans le dashboard **Supabase** → **SQL Editor**
+2. Exécutez **dans l'ordre** tous les fichiers de `/supabase/migrations/` :
+   - `0001_foundations.sql` (tables + trigger initial)
+   - `0002_events.sql`
+   - `0003_signups.sql`
+   - `0004_finance.sql`
+   - `0005_emails_donations.sql`
+   - `0006_rls_policies.sql`
+   - `0007_ensure_profile_function.sql`
+   - **`0008_fix_profiles_schema.sql`** ⚠️ **CRITIQUE** : corrige le trigger et ajoute les colonnes manquantes
+
+> **⚠️ Sans la migration 0008**, la création d'utilisateurs dans Supabase Auth UI échouera avec "Database error creating new user".
+
+3. Vérifiez que tout est OK :
+```bash
+node scripts/supabase-verify.js
+```
+
 ### Étape 1 : Créer le premier utilisateur JETC admin
 
 1. Allez dans le dashboard **Supabase** → **Authentication** → **Users**
@@ -85,6 +107,7 @@ Pour remplacer les images, copiez simplement vos nouvelles images PNG/JPG dans `
 3. Entrez l'email de l'administrateur JETC (ex: `admin@jetc-solution.fr`)
 4. Définissez un mot de passe temporaire
 5. **Cochez** "Auto Confirm User" pour éviter l'email de confirmation
+6. ✅ Le profil est créé automatiquement par le trigger `on_auth_user_created`
 
 ### Étape 2 : Promouvoir en JETC admin
 
@@ -128,13 +151,35 @@ Pour peupler rapidement la base avec des données de démonstration :
 
 Cela crée des membres du bureau fictifs, un événement de test, et un compteur de dons.
 
-### 🔧 Dépannage : Profils manquants
+### 🔧 Dépannage
 
-Si des utilisateurs ont été créés directement dans Supabase Auth mais n'ont pas de profil dans la table `profiles` :
+#### Erreur "Database error creating new user"
 
+**Cause :** Le trigger `on_auth_user_created` échoue car les colonnes `first_name`, `last_name`, `is_jetc_admin`, ou `must_change_password` n'existent pas dans `profiles`.
+
+**Solution :** Exécutez la migration corrective dans SQL Editor :
+```sql
+-- Exécutez supabase/migrations/0008_fix_profiles_schema.sql
+```
+
+Puis vérifiez avec le script de diagnostic :
 ```bash
-# Dans SQL Editor, exécutez :
-# supabase/scripts/repair-profiles.sql
+node scripts/check-trigger.js
+```
+
+Cette migration :
+- Ajoute les colonnes manquantes à `profiles` (`first_name`, `last_name`, `is_jetc_admin`, `must_change_password`)
+- Corrige le trigger `handle_new_user()` pour utiliser le nouveau schéma
+- Migre les données `full_name` existantes vers `first_name`/`last_name`
+- Rend le trigger idempotent avec `ON CONFLICT DO UPDATE`
+
+#### Profils manquants pour utilisateurs existants
+
+Si des utilisateurs ont été créés avant la migration 0008 et n'ont pas de profil :
+
+```sql
+-- Dans SQL Editor, exécutez :
+-- supabase/scripts/repair-profiles.sql
 ```
 
 Ce script :
@@ -144,7 +189,10 @@ Ce script :
 
 ### 📁 Fichiers de bootstrap
 
-- **Migration** : [supabase/migrations/0007_ensure_profile_function.sql](supabase/migrations/0007_ensure_profile_function.sql)
+- **Migrations critiques** :
+  - [supabase/migrations/0001_foundations.sql](supabase/migrations/0001_foundations.sql) : Tables + trigger initial
+  - [supabase/migrations/0007_ensure_profile_function.sql](supabase/migrations/0007_ensure_profile_function.sql) : Fonctions helper
+  - **[supabase/migrations/0008_fix_profiles_schema.sql](supabase/migrations/0008_fix_profiles_schema.sql)** : **⚠️ OBLIGATOIRE** - Corrige schéma profiles
   - Fonction `ensure_profile_exists()` : création automatique de profil
   - Fonction `repair_missing_profiles()` : réparation des profils manquants
 
