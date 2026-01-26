@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import QRCode from 'qrcode'
 import { supabase } from '../../lib/supabaseClient'
+import Layout from '../../components/Layout'
 
 export default function DonsGeneraux({ donationCounter }) {
   const canvasRef = useRef(null)
@@ -19,66 +20,62 @@ export default function DonsGeneraux({ donationCounter }) {
   }, [donationUrl])
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', textAlign: 'center' }}>
-      <header style={{ marginBottom: '40px' }}>
-        <Link href="/" style={{ color: '#4CAF50' }}>
-          ← Retour à l'accueil
-        </Link>
-      </header>
+    <Layout>
+      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px', textAlign: 'center' }}>
+        <h1>💝 Faire un don à l&apos;ASSEP</h1>
+        <p style={{ fontSize: '18px', marginBottom: '40px' }}>
+          Votre générosité nous permet de financer des projets pédagogiques, 
+          des sorties scolaires et du matériel pour nos enfants.
+        </p>
 
-      <h1>💝 Faire un don à l'ASSEP</h1>
-      <p style={{ fontSize: '18px', marginBottom: '40px' }}>
-        Votre générosité nous permet de financer des projets pédagogiques, 
-        des sorties scolaires et du matériel pour nos enfants.
-      </p>
+        {donationCounter && donationCounter.amount_cents_total > 0 && (
+          <div style={{ 
+            padding: '20px',
+            backgroundColor: '#f0f8f0',
+            borderRadius: '8px',
+            marginBottom: '40px'
+          }}>
+            <p style={{ fontSize: '16px', color: '#666', margin: '0 0 10px 0' }}>
+              Total des dons collectés :
+            </p>
+            <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#4CAF50', margin: 0 }}>
+              {(donationCounter.amount_cents_total / 100).toFixed(2)} €
+            </p>
+          </div>
+        )}
 
-      {donationCounter && donationCounter.amount_cents_total > 0 && (
+        <div style={{ marginBottom: '40px' }}>
+          <canvas ref={canvasRef} style={{ maxWidth: '100%' }}></canvas>
+        </div>
+
+        <p style={{ fontSize: '16px', color: '#666' }}>
+          Scannez ce QR code avec votre téléphone<br />
+          ou <a href={donationUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#4CAF50' }}>
+            cliquez ici pour faire un don en ligne
+          </a>
+        </p>
+
         <div style={{ 
+          marginTop: '60px',
           padding: '20px',
-          backgroundColor: '#f0f8f0',
+          backgroundColor: '#f9f9f9',
           borderRadius: '8px',
-          marginBottom: '40px'
+          textAlign: 'left'
         }}>
-          <p style={{ fontSize: '16px', color: '#666', margin: '0 0 10px 0' }}>
-            Total des dons collectés :
-          </p>
-          <p style={{ fontSize: '36px', fontWeight: 'bold', color: '#4CAF50', margin: 0 }}>
-            {(donationCounter.amount_cents_total / 100).toFixed(2)} €
+          <h2>Pourquoi donner ?</h2>
+          <ul style={{ lineHeight: '1.8' }}>
+            <li>Financer des sorties éducatives et culturelles</li>
+            <li>Acheter du matériel pédagogique et sportif</li>
+            <li>Organiser des événements conviviaux pour l&apos;école</li>
+            <li>Soutenir des projets innovants pour nos enfants</li>
+          </ul>
+          <p style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>
+            L&apos;ASSEP est une association à but non lucratif. Tous les dons sont utilisés 
+            exclusivement pour le bénéfice des élèves de l&apos;école Hubert Reeves.
           </p>
         </div>
-      )}
-
-      <div style={{ marginBottom: '40px' }}>
-        <canvas ref={canvasRef} style={{ maxWidth: '100%' }}></canvas>
       </div>
-
-      <p style={{ fontSize: '16px', color: '#666' }}>
-        Scannez ce QR code avec votre téléphone<br />
-        ou <a href={donationUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#4CAF50' }}>
-          cliquez ici pour faire un don en ligne
-        </a>
-      </p>
-
-      <div style={{ 
-        marginTop: '60px',
-        padding: '20px',
-        backgroundColor: '#f9f9f9',
-        borderRadius: '8px',
-        textAlign: 'left'
-      }}>
-        <h2>Pourquoi donner ?</h2>
-        <ul style={{ lineHeight: '1.8' }}>
-          <li>Financer des sorties éducatives et culturelles</li>
-          <li>Acheter du matériel pédagogique et sportif</li>
-          <li>Organiser des événements conviviaux pour l'école</li>
-          <li>Soutenir des projets innovants pour nos enfants</li>
-        </ul>
-        <p style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>
-          L'ASSEP est une association à but non lucratif. Tous les dons sont utilisés 
-          exclusivement pour le bénéfice des élèves de l'école Hubert Reeves.
-        </p>
-      </div>
-    </div>
+    </Layout>
   )
 }
 

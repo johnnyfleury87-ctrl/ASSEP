@@ -4,6 +4,7 @@
 import { supabase } from '../../lib/supabaseClient'
 import { useState } from 'react'
 import Link from 'next/link'
+import Layout from '../../components/Layout'
 
 export default function EventDetail({ event, buvette, paymentMethods, tasksWithShifts, donationCounter }) {
   const [formData, setFormData] = useState({
@@ -63,23 +64,20 @@ export default function EventDetail({ event, buvette, paymentMethods, tasksWithS
 
   if (!event) {
     return (
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-        <p>Événement non trouvé</p>
-        <Link href="/evenements">← Retour aux événements</Link>
-      </div>
+      <Layout>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
+          <p>Événement non trouvé</p>
+          <Link href="/evenements">← Retour aux événements</Link>
+        </div>
+      </Layout>
     )
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-      <header style={{ marginBottom: '40px' }}>
-        <Link href="/evenements" style={{ color: '#4CAF50' }}>
-          ← Retour aux événements
-        </Link>
-      </header>
-
-      <h1>{event.title}</h1>
-      {event.theme && <p style={{ fontSize: '18px', color: '#666' }}>{event.theme}</p>}
+    <Layout>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
+        <h1>{event.title}</h1>
+        {event.theme && <p style={{ fontSize: '18px', color: '#666' }}>{event.theme}</p>}
       
       <div style={{ margin: '20px 0' }}>
         <p><strong>📍 Lieu :</strong> {event.location}</p>
@@ -316,7 +314,8 @@ export default function EventDetail({ event, buvette, paymentMethods, tasksWithS
           Faire un don
         </Link>
       </section>
-    </div>
+      </div>
+    </Layout>
   )
 }
 

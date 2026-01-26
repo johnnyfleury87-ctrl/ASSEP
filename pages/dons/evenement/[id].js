@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import QRCode from 'qrcode'
 import { supabase } from '../../../lib/supabaseClient'
+import Layout from '../../../components/Layout'
 
 export default function DonsEvenement({ event, donationCounter }) {
   const canvasRef = useRef(null)
@@ -21,23 +22,20 @@ export default function DonsEvenement({ event, donationCounter }) {
 
   if (!event) {
     return (
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', textAlign: 'center' }}>
-        <p>Événement non trouvé</p>
-        <Link href="/dons">← Retour aux dons généraux</Link>
-      </div>
+      <Layout>
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px', textAlign: 'center' }}>
+          <p>Événement non trouvé</p>
+          <Link href="/dons">← Retour aux dons généraux</Link>
+        </div>
+      </Layout>
     )
   }
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', textAlign: 'center' }}>
-      <header style={{ marginBottom: '40px' }}>
-        <Link href={`/evenements/${event.slug}`} style={{ color: '#4CAF50' }}>
-          ← Retour à l'événement
-        </Link>
-      </header>
-
-      <h1>💝 Soutenir : {event.title}</h1>
-      {event.theme && <p style={{ fontSize: '18px', color: '#666' }}>{event.theme}</p>}
+    <Layout>
+      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px', textAlign: 'center' }}>
+        <h1>💝 Soutenir : {event.title}</h1>
+        {event.theme && <p style={{ fontSize: '18px', color: '#666' }}>{event.theme}</p>}
       
       <p style={{ fontSize: '16px', marginTop: '20px', marginBottom: '40px' }}>
         Aidez-nous à financer cet événement et à le rendre encore plus beau pour nos enfants !
@@ -72,10 +70,11 @@ export default function DonsEvenement({ event, donationCounter }) {
 
       <div style={{ marginTop: '40px' }}>
         <Link href="/dons" style={{ color: '#4CAF50' }}>
-          Voir tous les moyens de soutenir l'ASSEP →
+          Voir tous les moyens de soutenir l&apos;ASSEP →
         </Link>
       </div>
-    </div>
+      </div>
+    </Layout>
   )
 }
 

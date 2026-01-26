@@ -1,153 +1,295 @@
 // pages/index.js
-// Page d'accueil publique
+// Page d'accueil refonte mobile-first
 
-import { supabase } from '../lib/supabaseClient'
+import Layout from '../components/Layout'
+import Hero from '../components/Hero'
+import EventCard from '../components/EventCard'
 import Link from 'next/link'
+import { supabase } from '../lib/supabaseClient'
+import { HELP_SECTIONS } from '../lib/constants'
 
 export default function Home({ events, bureau }) {
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-      <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h1>ASSEP - Association École Hubert Reeves</h1>
-        <p>Champagnole - Soutenir et animer notre école</p>
-      </header>
+    <Layout>
+      {/* Hero Section */}
+      <Hero />
 
-      {/* Section présentation */}
-      <section style={{ marginBottom: '40px' }}>
-        <h2>Bienvenue</h2>
-        <p>
-          L'ASSEP (Association de Soutien et d'Entraide Parents) accompagne l'école Hubert Reeves 
-          dans l'organisation d'événements et d'activités pour enrichir la vie scolaire de nos enfants.
-        </p>
-      </section>
+      {/* Section: Prochains événements */}
+      <section style={{
+        padding: '60px 20px',
+        backgroundColor: '#f9fafb'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <h2 style={{
+            fontSize: 'clamp(24px, 4vw, 32px)',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            marginBottom: '40px',
+            color: '#333'
+          }}>
+            📅 Prochains événements
+          </h2>
 
-      {/* Prochains événements */}
-      <section style={{ marginBottom: '40px' }}>
-        <h2>Prochains événements</h2>
-        {events && events.length > 0 ? (
-          <div style={{ display: 'grid', gap: '20px' }}>
-            {events.map(event => (
-              <div key={event.id} style={{ 
-                border: '1px solid #ddd', 
-                borderRadius: '8px', 
-                padding: '20px',
-                backgroundColor: '#f9f9f9'
+          {events && events.length > 0 ? (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '24px'
+            }}>
+              {events.map(event => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          ) : (
+            <div style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <p style={{
+                fontSize: '18px',
+                color: '#666',
+                marginBottom: '20px'
               }}>
-                <h3>{event.title}</h3>
-                {event.theme && <p style={{ color: '#666' }}>{event.theme}</p>}
-                <p><strong>📍 {event.location}</strong></p>
-                <p>📅 {new Date(event.starts_at).toLocaleDateString('fr-FR', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}</p>
-                <Link href={`/evenements/${event.slug}`} style={{ 
+                Aucun événement prévu pour le moment.
+              </p>
+              <p style={{
+                fontSize: '16px',
+                color: '#888',
+                marginBottom: '30px'
+              }}>
+                Revenez bientôt pour découvrir nos prochaines activités ! 🎉
+              </p>
+              <Link
+                href="/evenements"
+                style={{
                   display: 'inline-block',
-                  marginTop: '10px',
-                  padding: '10px 20px',
+                  padding: '12px 30px',
                   backgroundColor: '#4CAF50',
                   color: 'white',
+                  borderRadius: '6px',
                   textDecoration: 'none',
-                  borderRadius: '4px'
+                  fontWeight: '600',
+                  fontSize: '15px'
+                }}
+              >
+                Voir tous les événements
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Section: Comment aider */}
+      <section style={{
+        padding: '60px 20px',
+        backgroundColor: 'white'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <h2 style={{
+            fontSize: 'clamp(24px, 4vw, 32px)',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            marginBottom: '20px',
+            color: '#333'
+          }}>
+            Comment aider l&apos;ASSEP ?
+          </h2>
+          <p style={{
+            textAlign: 'center',
+            fontSize: '16px',
+            color: '#666',
+            marginBottom: '50px',
+            maxWidth: '600px',
+            margin: '0 auto 50px'
+          }}>
+            Plusieurs façons de soutenir notre association et participer à la vie de l&apos;école
+          </p>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '30px'
+          }}>
+            {HELP_SECTIONS.map((section, index) => (
+              <div
+                key={index}
+                style={{
+                  backgroundColor: '#f9fafb',
+                  borderRadius: '12px',
+                  padding: '30px 24px',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)'
+                }}
+              >
+                <div style={{ fontSize: '48px' }}>
+                  {section.emoji}
+                </div>
+                <h3 style={{
+                  fontSize: '20px',
+                  fontWeight: 'bold',
+                  margin: 0,
+                  color: '#333'
                 }}>
-                  Voir les détails et s'inscrire
+                  {section.title}
+                </h3>
+                <p style={{
+                  fontSize: '15px',
+                  color: '#666',
+                  margin: 0,
+                  lineHeight: '1.5'
+                }}>
+                  {section.description}
+                </p>
+                <Link
+                  href={section.link}
+                  style={{
+                    display: 'inline-block',
+                    padding: '12px 24px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    borderRadius: '6px',
+                    textDecoration: 'none',
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    marginTop: 'auto',
+                    minHeight: '48px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#45a049'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
+                >
+                  En savoir plus →
                 </Link>
               </div>
             ))}
           </div>
-        ) : (
-          <p>Aucun événement à venir pour le moment. Revenez bientôt !</p>
-        )}
-        <div style={{ marginTop: '20px' }}>
-          <Link href="/evenements">
-            Voir tous les événements →
-          </Link>
         </div>
       </section>
 
-      {/* CTA Dons */}
-      <section style={{ 
-        backgroundColor: '#4CAF50', 
-        color: 'white', 
-        padding: '30px', 
-        borderRadius: '8px',
-        textAlign: 'center',
-        marginBottom: '40px'
+      {/* Section: Le Bureau */}
+      <section style={{
+        padding: '60px 20px',
+        backgroundColor: '#f9fafb'
       }}>
-        <h2>Soutenez l'ASSEP</h2>
-        <p>Vos dons nous aident à financer des projets éducatifs et des sorties scolaires.</p>
-        <Link href="/dons" style={{ 
-          display: 'inline-block',
-          marginTop: '10px',
-          padding: '12px 30px',
-          backgroundColor: 'white',
-          color: '#4CAF50',
-          textDecoration: 'none',
-          borderRadius: '4px',
-          fontWeight: 'bold'
-        }}>
-          Faire un don
-        </Link>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <h2 style={{
+            fontSize: 'clamp(24px, 4vw, 32px)',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            marginBottom: '40px',
+            color: '#333'
+          }}>
+            👥 Le Bureau de l&apos;ASSEP
+          </h2>
+
+          {bureau && bureau.length > 0 ? (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: '24px'
+            }}>
+              {bureau.map((member, index) => (
+                <div
+                  key={index}
+                  style={{
+                    backgroundColor: 'white',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    textAlign: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  <div style={{
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '50%',
+                    backgroundColor: '#4CAF50',
+                    margin: '0 auto 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '32px',
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}>
+                    {member.first_name?.charAt(0) || '?'}
+                  </div>
+                  <h3 style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    margin: '0 0 4px 0',
+                    color: '#333'
+                  }}>
+                    {member.first_name} {member.last_name}
+                  </h3>
+                  <p style={{
+                    fontSize: '14px',
+                    color: '#4CAF50',
+                    fontWeight: '600',
+                    margin: 0
+                  }}>
+                    {member.role_label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{
+              textAlign: 'center',
+              padding: '40px 20px',
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <p style={{
+                fontSize: '16px',
+                color: '#666'
+              }}>
+                Les membres du bureau seront présentés prochainement.
+              </p>
+            </div>
+          )}
+        </div>
       </section>
-
-      {/* Le Bureau */}
-      {bureau && bureau.length > 0 && (
-        <section style={{ marginBottom: '40px' }}>
-          <h2>Le Bureau</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-            {bureau.map(member => (
-              <div key={member.id} style={{ textAlign: 'center' }}>
-                {member.photo_url && (
-                  <img 
-                    src={member.photo_url} 
-                    alt={member.name || member.title}
-                    style={{ 
-                      width: '120px', 
-                      height: '120px', 
-                      borderRadius: '50%', 
-                      objectFit: 'cover',
-                      marginBottom: '10px'
-                    }}
-                  />
-                )}
-                <h4 style={{ margin: '5px 0' }}>{member.title}</h4>
-                {member.name && <p style={{ margin: '5px 0', color: '#666' }}>{member.name}</p>}
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <footer style={{ textAlign: 'center', marginTop: '60px', paddingTop: '20px', borderTop: '1px solid #ddd', color: '#666' }}>
-        <p>&copy; {new Date().getFullYear()} ASSEP - École Hubert Reeves, Champagnole</p>
-        <p>
-          <Link href="/login">Espace membres</Link>
-        </p>
-      </footer>
-    </div>
+    </Layout>
   )
 }
 
+// Server-side data fetching
 export async function getServerSideProps() {
   try {
-    // Récupérer les 3 prochains événements publiés
-    const { data: events, error: eventsError } = await supabase
+    // Récupérer les événements à venir
+    const { data: events } = await supabase
       .from('events')
-      .select('id, slug, title, theme, location, starts_at')
+      .select('id, slug, title, theme, location, starts_at, status')
       .eq('status', 'published')
       .gte('starts_at', new Date().toISOString())
       .order('starts_at', { ascending: true })
       .limit(3)
 
-    // Récupérer les membres du bureau visibles
-    const { data: bureau, error: bureauError } = await supabase
+    // Récupérer les membres du bureau
+    const { data: bureau } = await supabase
       .from('bureau_members')
-      .select('id, title, name, photo_url')
-      .eq('is_visible', true)
-      .order('sort_order', { ascending: true })
+      .select('*')
+      .order('display_order', { ascending: true })
 
     return {
       props: {

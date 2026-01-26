@@ -3,16 +3,13 @@
 
 import { supabase } from '../../lib/supabaseClient'
 import Link from 'next/link'
+import Layout from '../../components/Layout'
 
 export default function EventsList({ upcomingEvents, pastEvents }) {
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-      <header style={{ marginBottom: '40px' }}>
-        <Link href="/" style={{ color: '#4CAF50' }}>
-          ← Retour à l'accueil
-        </Link>
-        <h1 style={{ marginTop: '20px' }}>Tous les événements</h1>
-      </header>
+    <Layout>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
+        <h1 style={{ marginBottom: '40px' }}>Tous les événements</h1>
 
       {/* Événements à venir */}
       <section style={{ marginBottom: '60px' }}>
@@ -80,7 +77,8 @@ export default function EventsList({ upcomingEvents, pastEvents }) {
           <p>Aucun événement passé.</p>
         )}
       </section>
-    </div>
+      </div>
+    </Layout>
   )
 }
 
