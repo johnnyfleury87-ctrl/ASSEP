@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 
     const token = authHeader.replace('Bearer ', '');
     
-    // Vérifier le token ET récupérer l'utilisateur
+    // Vérifier le token avec getUser (ne crée pas de session persistante)
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
@@ -24,14 +24,17 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Token invalide' });
     }
 
-    // Utiliser supabaseAdmin avec service role pour contourner RLS
-    // Note: utiliser .limit(1) au lieu de .single() pour éviter l'erreur "Cannot coerce"
-    // en cas de doublons dans la table profiles
+    console.log('User authenticated:', user.id);
+
+    // IMPORTANT: Utiliser supabaseAdmin SANS contexte utilisateur
+    // Le service role contourne automatiquement RLS
     const { data: profiles, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('is_jetc_admin, role')
+      .select('is_jetc_admin, role, email')
       .eq('id', user.id)
       .limit(1);
+
+    console.log('Profile query result:', { profiles, profileError });
 
     if (profileError) {
       console.error('Profile error:', profileError);
@@ -39,10 +42,12 @@ export default async function handler(req, res) {
     }
 
     if (!profiles || profiles.length === 0) {
-      return res.status(403).json({ error: 'Aucun profil trouvé pour cet utilisateur' });
+      console.error('No profile found for user:', user.id);
+      return res.status(403).json({ error: 'Aucun profil trouvé pour cet utilisateur: ' + user.id });
     }
 
     const profile = profiles[0];
+    console.log('Profile loaded:', profile);
 
     const isAdmin = profile.is_jetc_admin || ['president', 'vice_president'].includes(profile.role);
     if (!isAdmin) {
