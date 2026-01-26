@@ -60,6 +60,20 @@ npm start         # Lancer après build
 npm run doctor    # Diagnostic santé du projet
 ```
 
+## 🖼️ Images et assets
+
+**Les images statiques doivent être placées dans `/public`** et référencées par `/<nom-fichier>` :
+
+- ✅ Fichier : `/public/hero.png`
+- ✅ Référence dans le code : `backgroundImage: "url(/hero.png)"`
+- ❌ Ne jamais utiliser : `"url(public/hero.png)"` ou `"url(./public/hero.png)"`
+
+**Images actuelles :**
+- `/hero.png` : Image de bannière (Hero section)
+- `/jetc-logo.png` : Logo JETC Solution (Footer)
+
+Pour remplacer les images, copiez simplement vos nouvelles images PNG/JPG dans `/public` en respectant les noms ci-dessus.
+
 ## ✅ Statut du projet
 
 Toutes les fonctionnalités du cahier des charges ci-dessous ont été implémentées.
