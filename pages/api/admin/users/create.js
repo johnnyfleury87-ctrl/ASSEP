@@ -10,7 +10,11 @@
  *   phone?: string
  * }
  */
-import { supabaseAdmin } from '../../../../lib/supabaseServer';
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -25,11 +29,21 @@ export default async function handler(req, res) {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    // CLIENT 1: Vérifier token avec ANON key
+    const supabaseAuth = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
 
     if (authError || !user) {
       return res.status(401).json({ error: 'Token invalide' });
     }
+
+    // CLIENT 2: Service role pour bypass RLS
+    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
 
     // Vérifier que l'utilisateur est JETC admin
     const { data: profile, error: profileError } = await supabaseAdmin

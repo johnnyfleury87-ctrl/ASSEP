@@ -4,7 +4,11 @@
  * PUT /api/admin/users - Mettre à jour un utilisateur
  * DELETE /api/admin/users - Supprimer un utilisateur
  */
-import { supabaseAdmin } from '../../../lib/supabaseServer';
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export default async function handler(req, res) {
   try {
@@ -16,58 +20,72 @@ export default async function handler(req, res) {
 
     const token = authHeader.replace('Bearer ', '');
     
-    // Vérifier le token avec getUser (ne crée pas de session persistante)
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    // CLIENT 1: Vérifier le token avec client ANON (ne touche pas au RLS)
+    const supabaseAuth = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+    
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
 
     if (authError || !user) {
       console.error('Auth error:', authError);
       return res.status(401).json({ error: 'Token invalide' });
     }
 
-    console.log('User authenticated:', user.id);
+    console.log('✅ User authenticated:', user.id, user.email);
 
-    // IMPORTANT: Utiliser supabaseAdmin SANS contexte utilisateur
-    // Le service role contourne automatiquement RLS
-    const { data: profiles, error: profileError } = await supabaseAdmin
+    // CLIENT 2: Utiliser SERVICE ROLE pour bypass RLS (client complètement séparé)
+    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+
+    // Charger le profil du requester avec service role (bypass RLS)
+    const { data: me, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('is_jetc_admin, role, email')
+      .select('id, email, role, is_jetc_admin')
       .eq('id', user.id)
-      .limit(1);
+      .single();
 
-    console.log('Profile query result:', { profiles, profileError });
+    console.log('📋 Profile query:', { me, profileError });
 
     if (profileError) {
-      console.error('Profile error:', profileError);
-      return res.status(403).json({ error: 'Erreur lecture profil: ' + profileError.message });
+      console.error('❌ Profile error:', profileError);
+      return res.status(403).json({ 
+        error: 'Profile missing for auth user id: ' + user.id,
+        details: profileError.message 
+      });
     }
 
-    if (!profiles || profiles.length === 0) {
-      console.error('No profile found for user:', user.id);
-      return res.status(403).json({ error: 'Aucun profil trouvé pour cet utilisateur: ' + user.id });
+    if (!me) {
+      return res.status(403).json({ 
+        error: 'Profile missing for auth user id: ' + user.id 
+      });
     }
 
-    const profile = profiles[0];
-    console.log('Profile loaded:', profile);
-
-    const isAdmin = profile.is_jetc_admin || ['president', 'vice_president'].includes(profile.role);
+    // Vérifier que l'utilisateur est JETC admin
+    const isAdmin = me.is_jetc_admin || ['president', 'vice_president'].includes(me.role);
     if (!isAdmin) {
-      return res.status(403).json({ error: 'Accès refusé' });
+      return res.status(403).json({ error: 'Forbidden (not JETC admin)' });
     }
+
+    console.log('✅ Admin verified:', me.email, me.role);
 
     // ========================================================================
     // GET: Liste des utilisateurs
     // ========================================================================
     if (req.method === 'GET') {
-      const { data: profiles, error: listError } = await supabaseAdmin
+      const { data: allProfiles, error: listError } = await supabaseAdmin
         .from('profiles')
-        .select('*')
+        .select('id, email, first_name, last_name, phone, role, is_jetc_admin, must_change_password, created_at, updated_at')
         .order('created_at', { ascending: false });
 
       if (listError) {
+        console.error('❌ List error:', listError);
         return res.status(500).json({ error: listError.message });
       }
 
-      return res.status(200).json({ users: profiles });
+      console.log('✅ Loaded', allProfiles?.length || 0, 'profiles');
+      return res.status(200).json({ users: allProfiles || [] });
     }
 
     // ========================================================================
@@ -99,7 +117,7 @@ export default async function handler(req, res) {
 
       // Si changement de rôle, ajouter traçabilité
       if (updates.role) {
-        filteredUpdates.role_approved_by = user.id;
+        filteredUpdates.role_approved_by = me.id;
         filteredUpdates.role_approved_at = new Date().toISOString();
       }
 
