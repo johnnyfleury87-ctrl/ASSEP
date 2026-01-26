@@ -6,7 +6,7 @@
 
 ---
 
-## 🔴 Problème initial
+## 🔴 Problème 1 : Conflit peer dependencies (RÉSOLU)
 
 ### Symptômes
 ```bash
@@ -16,16 +16,45 @@ npm install
 # Conflicting peer dependency: eslint@8.57.1
 ```
 
-- ❌ `npm install` échoue en local
-- ❌ Build Vercel bloqué
-- ❌ Conflit de peer dependency non résolu
+### Solution appliquée
+Downgrade `eslint-config-next` de 16.1.4 vers 14.2.35 (compatible eslint 8.x)
+
+**Résultat :** ✅ `npm install` et `npm run build` fonctionnent
+
+---
+
+## 🔴 Problème 2 : Vercel "No Output Directory named public" (RÉSOLU)
+
+### Symptômes
+```
+Error: No Output Directory named "public" found after the Build completed.
+```
+
+- ❌ Build Vercel échoue
+- ❌ Cherche dossier `public` au lieu de `.next`
+- ❌ Framework Next.js non détecté
 
 ### Cause racine
-L'audit sécurité précédent (`npm audit fix --force`) avait créé une incompatibilité :
-- `eslint-config-next` upgradé vers `16.1.4`
-- Version 16.x demande `eslint@>=9.0.0`
-- Projet utilise `eslint@8.57.1` (stable)
-- → Conflit de versions peer dependencies
+Vercel n'a pas détecté automatiquement que le projet est Next.js et l'a traité comme un site statique (qui utilise un dossier `public`).
+
+### Solution appliquée
+
+**1. Création de `vercel.json` à la racine :**
+
+```json
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install"
+}
+```
+
+**2. Documentation mise à jour :**
+- [DEPLOYMENT.md](DEPLOYMENT.md) : guide complet avec configuration Vercel
+- [README.md](README.md) : section déploiement Vercel avec troubleshooting
+
+**Résultat :** ✅ Vercel détecte Next.js automatiquement
 
 ---
 
@@ -161,33 +190,52 @@ npm run build
 ## 🚀 Déploiement Vercel
 
 ### Configuration requise
-1. Variables d'environnement (via Vercel Dashboard) :
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `RESEND_API_KEY`
-   - `EMAIL_FROM`
-   - `NEXT_PUBLIC_DONATION_GENERAL_URL`
-   - `NEXT_PUBLIC_DONATION_EVENT_BASE_URL`
 
-2. Build settings :
-   - Framework : Next.js
-   - Build command : `npm run build`
-   - Output directory : `.next`
-   - Node version : 18.x ou supérieur
+**Le projet est maintenant prêt avec :**
 
-3. Déployer :
-   ```bash
-   git push origin main
-   # Vercel auto-deploy déclenché
+1. ✅ `vercel.json` à la racine (détection automatique)
+2. ✅ Documentation complète dans [DEPLOYMENT.md](DEPLOYMENT.md)
+3. ✅ Section troubleshooting dans [README.md](README.md)
+
+### Étapes de déploiement
+
+1. **Import sur Vercel :**
+   - Aller sur https://vercel.com/new
+   - Importer le repo GitHub
+   - Vercel détecte automatiquement Next.js grâce à `vercel.json`
+
+2. **Vérifier la configuration (NE PAS MODIFIER) :**
+   - Framework Preset : **Next.js** ✅
+   - Build Command : `npm run build` ✅
+   - Output Directory : **`.next`** ou **vide** ✅ (jamais "public")
+   - Install Command : `npm install` ✅
+   - Node.js Version : 18.x ✅
+
+3. **Configurer les variables d'environnement :**
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=https://...
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+   SUPABASE_SERVICE_ROLE_KEY=eyJ...
+   RESEND_API_KEY=re_...
+   EMAIL_FROM=ASSEP <noreply@...>
+   NEXT_PUBLIC_DONATION_GENERAL_URL=https://...
+   NEXT_PUBLIC_DONATION_EVENT_BASE_URL=https://...
    ```
 
-### Vérification post-déploiement
-1. ✅ Build logs Vercel sans erreur npm install
-2. ✅ Build logs Vercel sans erreur npm run build
-3. ✅ Site accessible (status 200)
-4. ✅ Routes publiques OK (/, /evenements)
-5. ✅ Routes dashboard protégées (redirect /login)
+4. **Déployer :**
+   - Cliquer sur "Deploy"
+   - Attendre le build (~2-3 min)
+   - ✅ Site déployé sur `https://votre-projet.vercel.app`
+
+### Troubleshooting
+
+**Si l'erreur "No Output Directory named public" persiste :**
+
+1. Vérifier que `vercel.json` existe à la racine du repo
+2. Dans Vercel Dashboard → Project Settings → General :
+   - Framework Preset doit être "Next.js"
+   - Output Directory doit être **vide** ou `.next`
+3. Forcer un redéploiement depuis le dashboard
 
 ---
 
