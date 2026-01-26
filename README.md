@@ -74,6 +74,99 @@ npm run doctor    # Diagnostic santé du projet
 
 Pour remplacer les images, copiez simplement vos nouvelles images PNG/JPG dans `/public` en respectant les noms ci-dessus.
 
+## 🔧 Bootstrap d'une base Supabase vide
+
+**Workflow complet pour initialiser une nouvelle base de données :**
+
+### Étape 1 : Créer le premier utilisateur JETC admin
+
+1. Allez dans le dashboard **Supabase** → **Authentication** → **Users**
+2. Cliquez sur **Add user** → **Create new user**
+3. Entrez l'email de l'administrateur JETC (ex: `admin@jetc-solution.fr`)
+4. Définissez un mot de passe temporaire
+5. **Cochez** "Auto Confirm User" pour éviter l'email de confirmation
+
+### Étape 2 : Promouvoir en JETC admin
+
+1. Ouvrez [supabase/scripts/promote-jetc-admin.sql](supabase/scripts/promote-jetc-admin.sql)
+2. **Remplacez** `'votre-email@jetc-solution.fr'` par l'email créé à l'étape 1
+3. Exécutez le script dans **SQL Editor** du dashboard Supabase
+4. Vérifiez que le résultat affiche `is_jetc_admin = true`
+
+### Étape 3 : Connexion et création des autres utilisateurs
+
+1. Connectez-vous sur le site avec le compte JETC admin : `/login`
+2. Accédez à la page de gestion : `/dashboard/jetc/users`
+3. Utilisez le formulaire pour créer tous les autres utilisateurs (bureau, parents, etc.)
+4. Le mot de passe temporaire **ASSEP1234!** est automatiquement attribué
+5. Les utilisateurs devront le changer lors de leur première connexion
+
+### Étape 4 : Vérification de l'installation
+
+Exécutez le script de vérification pour valider que tout est configuré correctement :
+
+```bash
+node scripts/supabase-verify.js
+```
+
+Le script vérifie :
+- ✅ Existence des 11 tables attendues
+- ✅ Colonnes critiques (is_jetc_admin, has_buvette, etc.)
+- ✅ RLS activé sur toutes les tables
+- ✅ Fonctions SQL (ensure_profile_exists, repair_missing_profiles)
+
+**En cas d'erreur**, le script génère automatiquement le SQL correctif à exécuter.
+
+### Étape 5 (optionnelle) : Données de test
+
+Pour peupler rapidement la base avec des données de démonstration :
+
+```bash
+# Dans le dashboard Supabase → SQL Editor
+# Exécutez le fichier supabase/seed.sql
+```
+
+Cela crée des membres du bureau fictifs, un événement de test, et un compteur de dons.
+
+### 🔧 Dépannage : Profils manquants
+
+Si des utilisateurs ont été créés directement dans Supabase Auth mais n'ont pas de profil dans la table `profiles` :
+
+```bash
+# Dans SQL Editor, exécutez :
+# supabase/scripts/repair-profiles.sql
+```
+
+Ce script :
+1. Liste tous les utilisateurs sans profil
+2. Crée automatiquement les profils manquants
+3. Affiche un résumé avant/après
+
+### 📁 Fichiers de bootstrap
+
+- **Migration** : [supabase/migrations/0007_ensure_profile_function.sql](supabase/migrations/0007_ensure_profile_function.sql)
+  - Fonction `ensure_profile_exists()` : création automatique de profil
+  - Fonction `repair_missing_profiles()` : réparation des profils manquants
+
+- **Scripts SQL** :
+  - [supabase/scripts/promote-jetc-admin.sql](supabase/scripts/promote-jetc-admin.sql) : Promotion en admin
+  - [supabase/scripts/repair-profiles.sql](supabase/scripts/repair-profiles.sql) : Réparation des profils
+
+- **API** : [pages/api/admin/users/create.js](pages/api/admin/users/create.js)
+  - Endpoint POST protégé par Bearer token
+  - Requiert `is_jetc_admin = true`
+  - Crée l'utilisateur avec `auth.admin.createUser()`
+  - Génère automatiquement le profil associé
+
+- **Interface** : [pages/dashboard/jetc/users.js](pages/dashboard/jetc/users.js)
+  - Formulaire de création d'utilisateurs
+  - Liste de tous les utilisateurs avec leur rôle
+  - Accès réservé aux JETC admin
+
+- **Vérification** : [scripts/supabase-verify.js](scripts/supabase-verify.js)
+  - Diagnostic complet de la base de données
+  - Génération de SQL correctif si besoin
+
 ## ✅ Statut du projet
 
 Toutes les fonctionnalités du cahier des charges ci-dessous ont été implémentées.
