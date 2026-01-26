@@ -1,20 +1,9 @@
 /**
  * API JETC: Créer un nouvel utilisateur
  * POST /api/admin/users/create
- * 
- * Body: {
- *   email: string,
- *   firstName: string,
- *   lastName: string,
- *   role: string,
- *   phone?: string
- * }
  */
-import { createClient } from '@supabase/supabase-js';
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
+import { createAnonClient } from '../../../../lib/supabaseAnonServer';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -22,7 +11,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Vérifier l'authentification
+    // 1. Extraire le token
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       return res.status(401).json({ error: 'Non authentifié' });
@@ -30,40 +19,32 @@ export default async function handler(req, res) {
 
     const token = authHeader.replace('Bearer ', '');
 
-    // CLIENT 1: Vérifier token avec ANON key
-    const supabaseAuth = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false }
-    });
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+    // 2. Vérifier le token avec client ANON
+    const anonClient = createAnonClient(token);
+    const { data: { user }, error: authError } = await anonClient.auth.getUser();
 
     if (authError || !user) {
       return res.status(401).json({ error: 'Token invalide' });
     }
 
-    // CLIENT 2: Service role pour bypass RLS
-    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false }
-    });
-
-    // Vérifier que l'utilisateur est JETC admin
+    // 3. Charger le profil avec client ADMIN
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('is_jetc_admin, role')
+      .select('id, role, is_jetc_admin')
       .eq('id', user.id)
       .single();
 
     if (profileError || !profile) {
-      return res.status(403).json({ error: 'Profil non trouvé' });
+      return res.status(403).json({ error: 'Profile missing' });
     }
 
     if (!profile.is_jetc_admin && !['president', 'vice_president'].includes(profile.role)) {
-      return res.status(403).json({ error: 'Accès refusé - JETC admin requis' });
+      return res.status(403).json({ error: 'User not allowed' });
     }
 
-    // Récupérer les données du body
+    // 4. Récupérer les données
     const { email, firstName, lastName, role, phone } = req.body;
 
-    // Validation
     if (!email || !firstName || !lastName || !role) {
       return res.status(400).json({ 
         error: 'Champs requis: email, firstName, lastName, role' 
@@ -86,14 +67,13 @@ export default async function handler(req, res) {
       });
     }
 
-    // IMPORTANT: Password temporaire par défaut
     const temporaryPassword = 'ASSEP1234!';
 
-    // Créer l'utilisateur dans auth.users avec auto-confirm
+    // 5. Créer l'utilisateur dans Auth
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email: email.toLowerCase().trim(),
       password: temporaryPassword,
-      email_confirm: true, // AUTO-CONFIRM - pas de vérification email
+      email_confirm: true,
       user_metadata: {
         first_name: firstName,
         last_name: lastName,
@@ -102,7 +82,6 @@ export default async function handler(req, res) {
     });
 
     if (createError) {
-      console.error('Erreur création user:', createError);
       return res.status(400).json({ 
         error: createError.message || 'Erreur lors de la création du compte' 
       });
@@ -112,57 +91,38 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'User créé mais données manquantes' });
     }
 
-    // Créer le profil explicitement (pas de trigger automatique sur auth.users)
-    const { data: profileData, error: rpcError } = await supabaseAdmin.rpc(
-      'create_profile_for_user',
-      {
-        p_user_id: newUser.user.id,
-        p_email: email.toLowerCase().trim(),
-        p_first_name: firstName,
-        p_last_name: lastName,
-        p_role: role,
-        p_must_change_password: true,
-        p_created_by: user.id
-      }
-    );
-
-    if (rpcError) {
-      console.error('Erreur création profil:', rpcError);
-      // Fallback: essayer de créer via insert direct
-      const { error: insertError } = await supabaseAdmin
-        .from('profiles')
-        .insert({
-          id: newUser.user.id,
-          email: email.toLowerCase().trim(),
-          first_name: firstName,
-          last_name: lastName,
-          phone: phone || null,
-          role: role,
-          must_change_password: true,
-          created_by: user.id
-        });
-      
-      if (insertError && insertError.code !== '23505') { // Ignore si profil existe déjà
-        console.error('Erreur insert profil:', insertError);
-      }
-    }
-
-    // Mettre à jour avec le téléphone si fourni
-    const { error: updateError } = await supabaseAdmin
+    // 6. Créer/Upsert le profil avec client ADMIN
+    const { error: profileUpsertError } = await supabaseAdmin
       .from('profiles')
-      .update({ phone: phone || null })
-      .eq('id', newUser.user.id);
+      .upsert({
+        id: newUser.user.id,
+        email: email.toLowerCase().trim(),
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone || null,
+        role: role,
+        is_jetc_admin: false,
+        must_change_password: true,
+        created_by: profile.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { 
+        onConflict: 'id' 
+      });
 
-    if (updateError) {
-      console.error('Erreur mise à jour profil:', updateError);
+    if (profileUpsertError) {
+      console.error('❌ Profile upsert error:', profileUpsertError.message);
+      // Ne pas fail si profil existe déjà
     }
 
-    // Récupérer le profil complet
+    // 7. Récupérer le profil complet
     const { data: completeProfile } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('id', newUser.user.id)
       .single();
+
+    console.log('✅ admin action=create_user ok email=', email);
 
     return res.status(201).json({
       success: true,
@@ -175,7 +135,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Erreur API create user:', error);
+    console.error('❌ API create user error:', error.message);
     return res.status(500).json({ 
       error: 'Erreur serveur',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
