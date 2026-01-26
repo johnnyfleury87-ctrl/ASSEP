@@ -4,6 +4,7 @@
 import Layout from '../components/Layout'
 import Hero from '../components/Hero'
 import EventCard from '../components/EventCard'
+import Button from '../components/Button'
 import Link from 'next/link'
 import { supabase } from '../lib/supabaseClient'
 import { HELP_SECTIONS } from '../lib/constants'
@@ -62,21 +63,9 @@ export default function Home({ events, bureau }) {
               }}>
                 Revenez bientôt pour découvrir nos prochaines activités ! 🎉
               </p>
-              <Link
-                href="/evenements"
-                style={{
-                  display: 'inline-block',
-                  padding: '12px 30px',
-                  backgroundColor: '#4CAF50',
-                  color: 'white',
-                  borderRadius: '6px',
-                  textDecoration: 'none',
-                  fontWeight: '600',
-                  fontSize: '15px'
-                }}
-              >
+              <Button href="/evenements" variant="primary">
                 Voir tous les événements
-              </Link>
+              </Button>
             </div>
           )}
         </div>
@@ -117,23 +106,27 @@ export default function Home({ events, bureau }) {
               <div
                 key={index}
                 style={{
-                  backgroundColor: '#f9fafb',
-                  borderRadius: '12px',
+                  backgroundColor: 'white',
+                  borderRadius: '16px',
                   padding: '30px 24px',
                   textAlign: 'center',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '16px',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.07)',
+                  cursor: 'pointer',
+                  border: '1px solid #e5e7eb'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)'
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
+                  e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)'
+                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(76, 175, 80, 0.15)'
+                  e.currentTarget.style.borderColor = '#4CAF50'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)'
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)'
+                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.07)'
+                  e.currentTarget.style.borderColor = '#e5e7eb'
                 }}
               >
                 <div style={{ fontSize: '48px' }}>
@@ -155,29 +148,9 @@ export default function Home({ events, bureau }) {
                 }}>
                   {section.description}
                 </p>
-                <Link
-                  href={section.link}
-                  style={{
-                    display: 'inline-block',
-                    padding: '12px 24px',
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    borderRadius: '6px',
-                    textDecoration: 'none',
-                    fontWeight: '600',
-                    fontSize: '14px',
-                    marginTop: 'auto',
-                    minHeight: '48px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#45a049'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
-                >
+                <Button href={section.link} variant="primary" fullWidth>
                   En savoir plus →
-                </Link>
+                </Button>
               </div>
             ))}
           </div>

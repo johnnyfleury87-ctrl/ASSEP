@@ -1,137 +1,111 @@
 // components/Hero.js
-// Section hero de la page d'accueil
+// Hero avec image de fond et overlay
 
-import Link from 'next/link'
-import { SITE_NAME, SITE_TAGLINE, TRUST_POINTS } from '../lib/constants'
+import Button from './Button'
+import { ASSEP, TRUST_POINTS } from '../lib/constants'
 
 export default function Hero() {
   return (
     <section style={{
-      background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
-      color: 'white',
-      padding: '60px 20px',
-      textAlign: 'center'
+      position: 'relative',
+      minHeight: '500px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      backgroundImage: `url(${ASSEP.heroImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundColor: '#2c3e50' // Fallback si pas d'image
     }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        {/* Titre */}
+      {/* Overlay gradient pour lisibilité */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.85) 0%, rgba(44, 62, 80, 0.85) 100%)',
+        zIndex: 1
+      }} />
+
+      {/* Contenu */}
+      <div style={{
+        position: 'relative',
+        zIndex: 2,
+        textAlign: 'center',
+        color: 'white',
+        padding: '60px 20px',
+        maxWidth: '900px',
+        margin: '0 auto'
+      }}>
         <h1 style={{
-          fontSize: 'clamp(28px, 5vw, 42px)',
+          fontSize: 'clamp(32px, 6vw, 56px)',
           fontWeight: 'bold',
-          margin: '0 0 20px 0',
+          margin: '0 0 16px 0',
+          textShadow: '2px 2px 8px rgba(0, 0, 0, 0.3)',
           lineHeight: '1.2'
         }}>
-          {SITE_NAME}
+          {ASSEP.title}
         </h1>
 
-        {/* Sous-titre */}
         <p style={{
-          fontSize: 'clamp(16px, 3vw, 20px)',
+          fontSize: 'clamp(18px, 3vw, 24px)',
           margin: '0 0 40px 0',
           opacity: 0.95,
-          lineHeight: '1.5'
+          textShadow: '1px 1px 4px rgba(0, 0, 0, 0.3)'
         }}>
-          {SITE_TAGLINE}
+          {ASSEP.subtitle}
         </p>
 
         {/* CTA Buttons */}
         <div style={{
           display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          marginBottom: '50px',
-          alignItems: 'center'
+          gap: '16px',
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          marginBottom: '50px'
         }}>
-          <Link
-            href="/evenements"
-            style={{
-              display: 'inline-block',
-              padding: '16px 40px',
-              backgroundColor: 'white',
-              color: '#4CAF50',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              fontSize: '16px',
-              minHeight: '56px',
-              minWidth: '260px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-              transition: 'transform 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-          >
+          <Button href="/evenements" variant="primary">
             📅 Voir les événements
-          </Link>
-
-          <Link
-            href="/dons"
-            style={{
-              display: 'inline-block',
-              padding: '16px 40px',
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              color: 'white',
-              border: '2px solid white',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              fontSize: '16px',
-              minHeight: '56px',
-              minWidth: '260px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'white'
-              e.currentTarget.style.color = '#4CAF50'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'
-              e.currentTarget.style.color = 'white'
-            }}
-          >
+          </Button>
+          <Button href="/dons" variant="secondary">
             💝 Faire un don
-          </Link>
+          </Button>
         </div>
 
         {/* Trust points */}
         <div style={{
           display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          alignItems: 'center'
+          gap: '24px',
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          fontSize: 'clamp(14px, 2vw, 16px)',
+          opacity: 0.9
         }}>
           {TRUST_POINTS.map((point, index) => (
-            <div
+            <div 
               key={index}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                fontSize: '15px',
-                opacity: 0.95
+                padding: '8px 16px',
+                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                borderRadius: '20px',
+                backdropFilter: 'blur(10px)'
               }}
             >
-              <span>{point}</span>
+              {point}
             </div>
           ))}
         </div>
       </div>
 
       <style jsx>{`
-        @media (min-width: 768px) {
-          section > div > div:nth-child(3) {
-            flex-direction: row !important;
-            justify-content: center;
-          }
-          section > div > div:nth-child(4) {
-            flex-direction: row !important;
-            justify-content: center;
-            gap: 30px !important;
+        @media (max-width: 640px) {
+          section {
+            min-height: 400px;
           }
         }
       `}</style>
