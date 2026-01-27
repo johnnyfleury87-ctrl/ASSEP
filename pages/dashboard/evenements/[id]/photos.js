@@ -5,6 +5,13 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../../../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
+import { 
+  STORAGE_BUCKETS, 
+  EVENT_PHOTOS_BUCKET_CONFIG, 
+  getEventPhotoUrl,
+  checkBucketExists,
+  BUCKET_MISSING_ERROR 
+} from '../../../../lib/storageConfig'
 
 export default function EventPhotos() {
   const router = useRouter()
