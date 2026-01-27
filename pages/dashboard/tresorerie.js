@@ -5,18 +5,24 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
+import Button from '../../components/Button'
+import TransactionForm from '../../components/TransactionForm'
 
 export default function Tresorerie() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
-  const [entries, setEntries] = useState([])
+  const [transactions, setTransactions] = useState([])
   const [balance, setBalance] = useState(0)
+  const [showForm, setShowForm] = useState(false)
+  const [editingTransaction, setEditingTransaction] = useState(null)
+  const [message, setMessage] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    loadData()
+    checkAuthAndLoad()
   }, [])
 
-  const loadData = async () => {
+  const checkAuthAndLoad = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
@@ -35,38 +41,167 @@ export default function Tresorerie() {
       return
     }
 
-    const { data: ledgerData } = await supabase
-      .from('ledger_entries')
-      .select('*, events(title)')
-      .order('entry_date', { ascending: false })
+    loadTransactions()
+  }
 
-    if (ledgerData) {
-      setEntries(ledgerData)
-      
-      let total = 0
-      ledgerData.forEach(entry => {
-        if (entry.type === 'income') {
-          total += entry.amount_cents
-        } else {
-          total -= entry.amount_cents
+  const loadTransactions = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch('/api/finance/transactions', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
         }
       })
-      setBalance(total / 100)
+
+      if (!response.ok) {
+        throw new Error('Erreur lors du chargement des transactions')
+      }
+
+      const data = await response.json()
+      setTransactions(data.transactions || [])
+      setBalance(data.balance || 0)
+    } catch (err) {
+      console.error('Load error:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCreate = async (formData) => {
+    setError(null)
+    setMessage(null)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('Session expirée')
+      }
+
+      const response = await fetch('/api/finance/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(formData)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erreur lors de la création')
+      }
+
+      setMessage('Transaction créée avec succès !')
+      setShowForm(false)
+      loadTransactions()
+    } catch (err) {
+      setError(err.message)
+      throw err
+    }
+  }
+
+  const handleUpdate = async (formData) => {
+    setError(null)
+    setMessage(null)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('Session expirée')
+      }
+
+      const response = await fetch('/api/finance/transactions', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(formData)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erreur lors de la modification')
+      }
+
+      setMessage('Transaction modifiée avec succès !')
+      setShowForm(false)
+      setEditingTransaction(null)
+      loadTransactions()
+    } catch (err) {
+      setError(err.message)
+      throw err
+    }
+  }
+
+  const handleDelete = async (transactionId) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette transaction ?')) {
+      return
     }
 
-    setLoading(false)
+    setError(null)
+    setMessage(null)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('Session expirée')
+      }
+
+      const response = await fetch('/api/finance/transactions', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ id: transactionId })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erreur lors de la suppression')
+      }
+
+      setMessage('Transaction supprimée avec succès !')
+      loadTransactions()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  const handleEdit = (transaction) => {
+    setEditingTransaction(transaction)
+    setShowForm(true)
+    setMessage(null)
+    setError(null)
+  }
+
+  const handleCancelForm = () => {
+    setShowForm(false)
+    setEditingTransaction(null)
+    setError(null)
   }
 
   const exportCSV = () => {
-    if (entries.length === 0) return
+    if (transactions.length === 0) return
 
-    const headers = ['Date', 'Type', 'Libellé', 'Montant (€)', 'Événement']
-    const rows = entries.map(e => [
-      new Date(e.entry_date).toLocaleDateString('fr-FR'),
-      e.type === 'income' ? 'Recette' : 'Dépense',
-      e.label,
-      (e.amount_cents / 100).toFixed(2),
-      e.events?.title || ''
+    const headers = ['Date', 'Type', 'Catégorie', 'Description', 'Montant (€)', 'Événement']
+    const rows = transactions.map(t => [
+      new Date(t.transaction_date).toLocaleDateString('fr-FR'),
+      t.type === 'income' ? 'Recette' : 'Dépense',
+      t.category,
+      t.description,
+      t.amount.toFixed(2),
+      t.events?.title || ''
     ])
 
     const csvContent = [
@@ -94,91 +229,172 @@ export default function Tresorerie() {
         <h1 style={{ marginTop: '20px' }}>Trésorerie</h1>
       </header>
 
-      <div style={{ 
-        padding: '30px',
-        backgroundColor: '#e8f5e9',
-        borderRadius: '8px',
-        marginBottom: '40px',
-        textAlign: 'center'
-      }}>
-        <p style={{ fontSize: '18px', margin: '0 0 10px 0' }}>Solde actuel</p>
-        <p style={{ fontSize: '48px', fontWeight: 'bold', color: balance >= 0 ? '#4CAF50' : '#f44336', margin: 0 }}>
-          {balance.toFixed(2)} €
-        </p>
-      </div>
-
-      <div style={{ marginBottom: '20px' }}>
-        <button 
-          onClick={exportCSV}
-          disabled={entries.length === 0}
-          style={{ 
-            padding: '10px 20px',
-            backgroundColor: entries.length === 0 ? '#ccc' : '#2196F3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: entries.length === 0 ? 'not-allowed' : 'pointer'
-          }}
-        >
-          📥 Exporter en CSV
-        </button>
-      </div>
-
-      <h2>Historique des opérations</h2>
-
-      {entries.length === 0 ? (
-        <p>Aucune opération enregistrée.</p>
-      ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ 
-            width: '100%', 
-            borderCollapse: 'collapse',
-            backgroundColor: 'white'
-          }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f5f5f5' }}>
-                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Date</th>
-                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Type</th>
-                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Libellé</th>
-                <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Événement</th>
-                <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>Montant</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map(entry => (
-                <tr key={entry.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '12px' }}>
-                    {new Date(entry.entry_date).toLocaleDateString('fr-FR')}
-                  </td>
-                  <td style={{ padding: '12px' }}>
-                    <span style={{ 
-                      padding: '4px 8px',
-                      backgroundColor: entry.type === 'income' ? '#4CAF50' : '#f44336',
-                      color: 'white',
-                      borderRadius: '4px',
-                      fontSize: '12px'
-                    }}>
-                      {entry.type === 'income' ? 'Recette' : 'Dépense'}
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px' }}>{entry.label}</td>
-                  <td style={{ padding: '12px', fontSize: '14px', color: '#666' }}>
-                    {entry.events?.title || '-'}
-                  </td>
-                  <td style={{ 
-                    padding: '12px', 
-                    textAlign: 'right',
-                    fontWeight: 'bold',
-                    color: entry.type === 'income' ? '#4CAF50' : '#f44336'
-                  }}>
-                    {entry.type === 'income' ? '+' : '-'}
-                    {(entry.amount_cents / 100).toFixed(2)} €
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Messages */}
+      {message && (
+        <div style={{
+          backgroundColor: '#d4edda',
+          color: '#155724',
+          padding: '12px',
+          borderRadius: '4px',
+          marginBottom: '20px',
+          border: '1px solid #c3e6cb'
+        }}>
+          {message}
         </div>
+      )}
+
+      {error && (
+        <div style={{
+          backgroundColor: '#f8d7da',
+          color: '#721c24',
+          padding: '12px',
+          borderRadius: '4px',
+          marginBottom: '20px',
+          border: '1px solid #f5c6cb'
+        }}>
+          {error}
+        </div>
+      )}
+
+      {/* Formulaire */}
+      {showForm && (
+        <TransactionForm
+          transaction={editingTransaction}
+          onSubmit={editingTransaction ? handleUpdate : handleCreate}
+          onCancel={handleCancelForm}
+        />
+      )}
+
+      {/* Solde */}
+      {!showForm && (
+        <>
+          <div style={{ 
+            padding: '30px',
+            backgroundColor: '#e8f5e9',
+            borderRadius: '8px',
+            marginBottom: '40px',
+            textAlign: 'center'
+          }}>
+            <p style={{ fontSize: '18px', margin: '0 0 10px 0' }}>Solde actuel</p>
+            <p style={{ fontSize: '48px', fontWeight: 'bold', color: balance >= 0 ? '#4CAF50' : '#f44336', margin: 0 }}>
+              {balance.toFixed(2)} €
+            </p>
+          </div>
+
+          {/* Actions */}
+          <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+            <Button onClick={() => setShowForm(true)}>
+              ➕ Nouvelle transaction
+            </Button>
+            <button 
+              onClick={exportCSV}
+              disabled={transactions.length === 0}
+              style={{ 
+                padding: '10px 20px',
+                backgroundColor: transactions.length === 0 ? '#ccc' : '#2196F3',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: transactions.length === 0 ? 'not-allowed' : 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              📥 Exporter en CSV
+            </button>
+          </div>
+
+          {/* Liste des transactions */}
+          <h2>Historique des transactions</h2>
+
+          {transactions.length === 0 ? (
+            <p>Aucune transaction enregistrée.</p>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ 
+                width: '100%', 
+                borderCollapse: 'collapse',
+                backgroundColor: 'white'
+              }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f5f5f5' }}>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Date</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Type</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Catégorie</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Description</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Événement</th>
+                    <th style={{ padding: '12px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>Montant</th>
+                    <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #ddd' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map(transaction => (
+                    <tr key={transaction.id} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '12px' }}>
+                        {new Date(transaction.transaction_date).toLocaleDateString('fr-FR')}
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{ 
+                          padding: '4px 8px',
+                          backgroundColor: transaction.type === 'income' ? '#4CAF50' : '#f44336',
+                          color: 'white',
+                          borderRadius: '4px',
+                          fontSize: '12px'
+                        }}>
+                          {transaction.type === 'income' ? 'Recette' : 'Dépense'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px' }}>{transaction.category}</td>
+                      <td style={{ padding: '12px' }}>{transaction.description}</td>
+                      <td style={{ padding: '12px', fontSize: '14px', color: '#666' }}>
+                        {transaction.events?.title || '-'}
+                      </td>
+                      <td style={{ 
+                        padding: '12px', 
+                        textAlign: 'right',
+                        fontWeight: 'bold',
+                        color: transaction.type === 'income' ? '#4CAF50' : '#f44336'
+                      }}>
+                        {transaction.type === 'income' ? '+' : '-'}
+                        {transaction.amount.toFixed(2)} €
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                        <button
+                          onClick={() => handleEdit(transaction)}
+                          style={{
+                            padding: '4px 8px',
+                            marginRight: '4px',
+                            backgroundColor: '#2196F3',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px'
+                          }}
+                        >
+                          Éditer
+                        </button>
+                        <button
+                          onClick={() => handleDelete(transaction.id)}
+                          style={{
+                            padding: '4px 8px',
+                            backgroundColor: '#f44336',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px'
+                          }}
+                        >
+                          Supprimer
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
