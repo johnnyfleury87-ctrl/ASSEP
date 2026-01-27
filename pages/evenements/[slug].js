@@ -92,7 +92,7 @@ export default function EventDetail({ event, buvette, paymentMethods, tasksWithS
       </div>
 
       {/* Buvette */}
-      {event.has_buvette && buvette && buvette.length > 0 && (
+      {event.buvette_active && buvette && buvette.length > 0 && (
         <section style={{ margin: '40px 0' }}>
           <h2>🍹 Buvette</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '15px' }}>
@@ -335,13 +335,17 @@ export async function getServerSideProps({ params }) {
       return { props: { event: null } }
     }
 
-    // Récupérer la buvette
-    const { data: buvette } = await supabase
-      .from('event_buvette_items')
-      .select('*')
-      .eq('event_id', event.id)
-      .eq('is_active', true)
-      .order('name')
+    // Récupérer la buvette (si activée)
+    let buvette = []
+    if (event.buvette_active) {
+      const { data: products } = await supabase
+        .from('event_products')
+        .select('*')
+        .eq('event_id', event.id)
+        .eq('is_active', true)
+        .order('name')
+      buvette = products || []
+    }
 
     // Récupérer les moyens de paiement
     const { data: paymentMethods } = await supabase

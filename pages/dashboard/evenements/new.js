@@ -15,7 +15,9 @@ export default function NewEvent() {
     theme: '',
     location: '',
     startsAt: '',
-    status: 'draft'
+    status: 'draft',
+    buvette_active: false,
+    signups_enabled: false
   })
 
   const generateSlug = (title) => {
@@ -51,6 +53,8 @@ export default function NewEvent() {
           location: formData.location,
           event_date: formData.startsAt,
           status: formData.status,
+          buvette_active: formData.buvette_active,
+          signups_enabled: formData.signups_enabled,
           created_by: user.id
         })
         .select()
@@ -159,6 +163,38 @@ export default function NewEvent() {
             <option value="draft">Brouillon</option>
             <option value="published">Publié</option>
           </select>
+        </div>
+
+        <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}>
+          <div style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+              <input 
+                type="checkbox"
+                checked={formData.buvette_active}
+                onChange={(e) => setFormData({ ...formData, buvette_active: e.target.checked })}
+                style={{ marginRight: '10px', width: '20px', height: '20px', cursor: 'pointer' }}
+              />
+              <span style={{ fontWeight: 'bold' }}>🍺 Activer la buvette</span>
+            </label>
+            <p style={{ fontSize: '12px', color: '#666', margin: '5px 0 0 30px' }}>
+              Vous pourrez configurer les produits après création
+            </p>
+          </div>
+
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+              <input 
+                type="checkbox"
+                checked={formData.signups_enabled}
+                onChange={(e) => setFormData({ ...formData, signups_enabled: e.target.checked })}
+                style={{ marginRight: '10px', width: '20px', height: '20px', cursor: 'pointer' }}
+              />
+              <span style={{ fontWeight: 'bold' }}>📝 Activer les inscriptions publiques</span>
+            </label>
+            <p style={{ fontSize: '12px', color: '#666', margin: '5px 0 0 30px' }}>
+              Permet aux participants de s'inscrire via le site
+            </p>
+          </div>
         </div>
 
         <button 

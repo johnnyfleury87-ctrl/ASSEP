@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     // Vérifier que l'événement et le créneau existent
     const { data: event, error: eventError } = await supabaseAdmin
       .from('events')
-      .select('id, title, status')
+      .select('id, name, status, signups_enabled')
       .eq('id', eventId)
       .single()
 
@@ -42,6 +42,10 @@ export default async function handler(req, res) {
 
     if (event.status !== 'published') {
       return res.status(400).json({ error: 'Event is not open for signups' })
+    }
+
+    if (!event.signups_enabled) {
+      return res.status(400).json({ error: 'Signups are not enabled for this event' })
     }
 
     const { data: shift, error: shiftError } = await supabaseAdmin
@@ -95,7 +99,7 @@ export default async function handler(req, res) {
     const emailTemplate = volunteerConfirmationEmail({
       firstName,
       lastName,
-      eventTitle: event.title,
+      eventTitle: event.name,
       shiftDetails
     })
 
