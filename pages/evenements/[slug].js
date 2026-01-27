@@ -108,15 +108,12 @@ export default function EventDetail({ event, buvette, paymentMethods, tasksWithS
                 backgroundColor: 'white'
               }}>
                 <img
-                  src={photo.url || '/placeholder.jpg'}
+                  src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${photo.storage_path}`}
                   alt={photo.caption || 'Photo événement'}
                   style={{
                     width: '100%',
                     height: '200px',
                     objectFit: 'cover'
-                  }}
-                  onError={(e) => {
-                    e.target.src = '/placeholder.jpg'
                   }}
                 />
                 {photo.caption && (
@@ -438,23 +435,6 @@ export async function getServerSideProps({ params }) {
       .eq('event_id', event.id)
       .order('display_order', { ascending: true })
 
-    // Générer URLs signées pour les photos (bucket privé)
-    let photosWithUrls = []
-    if (photos && photos.length > 0) {
-      photosWithUrls = await Promise.all(
-        photos.map(async (photo) => {
-          const { data: urlData } = await supabase.storage
-            .from('event-photos')
-            .createSignedUrl(photo.storage_path, 3600) // 1 heure
-          
-          return {
-            ...photo,
-            url: urlData?.signedUrl || null
-          }
-        })
-      )
-    }
-
     return {
       props: {
         event,
@@ -462,7 +442,7 @@ export async function getServerSideProps({ params }) {
         paymentMethods: paymentMethods || [],
         tasksWithShifts: tasksWithShifts || [],
         donationCounter: donationCounter || null,
-        photos: photosWithUrls
+        photos: photos || []
       }
     }
   } catch (error) {

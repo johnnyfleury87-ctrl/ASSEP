@@ -23,13 +23,13 @@ export default function EventsList({ upcomingEvents, pastEvents }) {
                 padding: '20px',
                 backgroundColor: '#f9f9f9',
                 display: 'grid',
-                gridTemplateColumns: event.coverPhotoUrl ? '250px 1fr' : '1fr',
+                gridTemplateColumns: event.coverPhoto ? '250px 1fr' : '1fr',
                 gap: '20px',
                 alignItems: 'start'
               }}>
-                {event.coverPhotoUrl && (
+                {event.coverPhoto && (
                   <img 
-                    src={event.coverPhotoUrl}
+                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${event.coverPhoto.storage_path}`}
                     alt={event.name}
                     style={{
                       width: '100%',
@@ -84,13 +84,13 @@ export default function EventsList({ upcomingEvents, pastEvents }) {
                 backgroundColor: '#fafafa',
                 opacity: 0.8,
                 display: 'grid',
-                gridTemplateColumns: event.coverPhotoUrl ? '150px 1fr' : '1fr',
+                gridTemplateColumns: event.coverPhoto ? '150px 1fr' : '1fr',
                 gap: '15px',
                 alignItems: 'start'
               }}>
-                {event.coverPhotoUrl && (
+                {event.coverPhoto && (
                   <img 
-                    src={event.coverPhotoUrl}
+                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${event.coverPhoto.storage_path}`}
                     alt={event.name}
                     style={{
                       width: '100%',
@@ -155,13 +155,7 @@ export async function getServerSideProps() {
           .eq('is_cover', true)
           .single()
         
-        if (coverPhoto && coverPhoto.storage_path) {
-          const { data: urlData } = await supabase.storage
-            .from('event-photos')
-            .createSignedUrl(coverPhoto.storage_path, 3600)
-          
-          event.coverPhotoUrl = urlData?.signedUrl || null
-        }
+        event.coverPhoto = coverPhoto
       }
     }
 
@@ -191,13 +185,7 @@ export async function getServerSideProps() {
           .eq('is_cover', true)
           .single()
         
-        if (coverPhoto && coverPhoto.storage_path) {
-          const { data: urlData } = await supabase.storage
-            .from('event-photos')
-            .createSignedUrl(coverPhoto.storage_path, 3600)
-          
-          event.coverPhotoUrl = urlData?.signedUrl || null
-        }
+        event.coverPhoto = coverPhoto
       }
     }
 

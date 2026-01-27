@@ -84,29 +84,12 @@ export default function EventPhotos() {
     if (photosError) {
       console.error('Error loading photos:', photosError)
     } else {
-      // Générer URLs signées pour chaque photo
-      if (photosData && photosData.length > 0) {
-        const photosWithUrls = await Promise.all(
-          photosData.map(async (photo) => {
-            const { data: urlData } = await supabase.storage
-              .from('event-photos')
-              .createSignedUrl(photo.storage_path, 3600) // 1 heure
-            
-            return {
-              ...photo,
-              url: urlData?.signedUrl || null
-            }
-          })
-        )
-        setPhotos(photosWithUrls)
-      } else {
-        setPhotos([])
-      }
+      setPhotos(photosData || [])
     }
   }
 
   const getPhotoUrl = (photo) => {
-    return photo.url || '/placeholder.jpg'
+    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${photo.storage_path}`
   }
 
   const handleFileUpload = async (e) => {
