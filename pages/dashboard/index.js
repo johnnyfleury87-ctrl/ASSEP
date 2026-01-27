@@ -51,7 +51,7 @@ export default function Dashboard() {
         .from('events')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'published')
-        .gte('starts_at', new Date().toISOString())
+        .gte('event_date', new Date().toISOString())
 
       // Compter les bénévoles inscrits
       const { count: volunteersCount } = await supabase
@@ -59,18 +59,18 @@ export default function Dashboard() {
         .select('id', { count: 'exact', head: true })
         .eq('status', 'confirmed')
 
-      // Calculer le solde trésorerie (simplifié)
-      const { data: ledgerEntries } = await supabase
-        .from('ledger_entries')
-        .select('type, amount_cents')
+      // Calculer le solde trésorerie depuis transactions
+      const { data: transactions } = await supabase
+        .from('transactions')
+        .select('type, amount')
 
       let balance = 0
-      if (ledgerEntries) {
-        ledgerEntries.forEach(entry => {
-          if (entry.type === 'income') {
-            balance += entry.amount_cents
+      if (transactions) {
+        transactions.forEach(t => {
+          if (t.type === 'income') {
+            balance += parseFloat(t.amount)
           } else {
-            balance -= entry.amount_cents
+            balance -= parseFloat(t.amount)
           }
         })
       }
@@ -78,7 +78,7 @@ export default function Dashboard() {
       setStats({
         upcomingEvents: eventsCount || 0,
         totalVolunteers: volunteersCount || 0,
-        balance: balance / 100
+        balance: balance
       })
     } catch (error) {
       console.error('Error loading stats:', error)
@@ -114,7 +114,7 @@ export default function Dashboard() {
       }}>
         <div>
           <h1>Dashboard ASSEP</h1>
-          <p>Bienvenue, {profile.full_name || profile.email}</p>
+          <p>Bienvenue, {profile.first_name && profile.last_name ? `${profile.first_name} ${profile.last_name}` : profile.email}</p>
           <p style={{ fontSize: '14px', color: '#666' }}>
             Rôle : <strong>{profile.role.replace('_', ' ')}</strong>
           </p>
