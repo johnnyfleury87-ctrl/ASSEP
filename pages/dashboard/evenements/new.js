@@ -15,8 +15,6 @@ export default function NewEvent() {
     theme: '',
     location: '',
     startsAt: '',
-    endsAt: '',
-    hasBuvette: false,
     status: 'draft'
   })
 
@@ -48,12 +46,10 @@ export default function NewEvent() {
         .from('events')
         .insert({
           slug,
-          title: formData.title,
-          theme: formData.theme || null,
+          name: formData.title,
+          description: formData.theme || null,
           location: formData.location,
-          starts_at: formData.startsAt,
-          ends_at: formData.endsAt || null,
-          has_buvette: formData.hasBuvette,
+          event_date: formData.startsAt,
           status: formData.status,
           created_by: user.id
         })
@@ -138,42 +134,17 @@ export default function NewEvent() {
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-              Date/heure début *
-            </label>
-            <input 
-              type="datetime-local"
-              value={formData.startsAt}
-              onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
-              required
-              style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-              Date/heure fin
-            </label>
-            <input 
-              type="datetime-local"
-              value={formData.endsAt}
-              onChange={(e) => setFormData({ ...formData, endsAt: e.target.value })}
-              style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
-            />
-          </div>
-        </div>
-
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'flex', alignItems: 'center' }}>
-            <input 
-              type="checkbox"
-              checked={formData.hasBuvette}
-              onChange={(e) => setFormData({ ...formData, hasBuvette: e.target.checked })}
-              style={{ marginRight: '10px' }}
-            />
-            <span>Cet événement a une buvette</span>
+          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+            Date/heure début *
           </label>
+          <input 
+            type="datetime-local"
+            value={formData.startsAt}
+            onChange={(e) => setFormData({ ...formData, startsAt: e.target.value })}
+            required
+            style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
+          />
         </div>
 
         <div style={{ marginBottom: '20px' }}>

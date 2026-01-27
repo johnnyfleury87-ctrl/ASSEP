@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Token invalide' });
     }
 
-    console.log('✅ auth ok userId=', user.id);
+    // Auth successful
 
     // 3. Charger le profil avec client ADMIN (bypass RLS)
     const { data: profile, error: profileError } = await supabaseAdmin
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('✅ profile loaded role=', profile.role, 'is_jetc_admin=', profile.is_jetc_admin);
+    // Profile loaded
 
     // 4. Vérifier l'autorisation
     if (!profile.is_jetc_admin && !['president', 'vice_president'].includes(profile.role)) {
@@ -60,7 +60,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: listError.message });
       }
 
-      console.log('✅ admin action=list_users ok count=', allProfiles?.length || 0);
+      // Users listed successfully
       return res.status(200).json({ users: allProfiles || [] });
     }
 
@@ -106,7 +106,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: updateError.message });
       }
 
-      console.log('✅ admin action=update_user ok userId=', userId);
+      // User updated successfully
       return res.status(200).json({
         success: true,
         message: 'Profil mis à jour',
@@ -139,7 +139,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: deleteAuthError.message });
       }
 
-      console.log('✅ admin action=delete_user ok userId=', userId);
+      // User deleted successfully
       return res.status(200).json({
         success: true,
         message: 'Utilisateur supprimé'

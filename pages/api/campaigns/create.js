@@ -45,7 +45,7 @@ export default async function handler(req, res) {
       })
     }
 
-    console.log('✅ Auth OK - Creating campaign for:', profile.email)
+    // Auth successful - creating campaign
 
     // ========================================================================
     // VALIDATION DES DONNÉES
@@ -123,7 +123,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Erreur lors de la création de la campagne' })
     }
 
-    console.log('✅ Campaign created - ID:', campaign.id, 'Name:', campaign.name)
+    // Campaign created successfully
 
     return res.status(201).json({ 
       success: true,

@@ -50,7 +50,7 @@ export default async function handler(req, res) {
       })
     }
 
-    console.log('✅ Auth OK - User:', profile.email, 'Role:', profile.role)
+    // Auth successful - role verified
 
     // ========================================================================
     // LOGIQUE D'ENVOI
@@ -147,7 +147,7 @@ export default async function handler(req, res) {
       })
       .eq('id', campaignId)
 
-    console.log('✅ Campagne envoyée -', sentCount, 'réussis,', failedCount, 'échecs')
+    // Campaign sent successfully
 
     return res.status(200).json({
       success: true,

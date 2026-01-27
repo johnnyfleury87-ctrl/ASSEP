@@ -173,7 +173,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Erreur lors de la création de la transaction.' })
       }
 
-      console.log(`Transaction créée: ${transaction.id} par ${user.email}`)
+      // Transaction created successfully
       return res.status(201).json({ transaction })
 
     } catch (err) {
@@ -256,7 +256,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Erreur lors de la mise à jour de la transaction.' })
       }
 
-      console.log(`Transaction modifiée: ${id} par ${user.email}`)
+      // Transaction updated successfully
       return res.status(200).json({ transaction })
 
     } catch (err) {
@@ -299,7 +299,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Erreur lors de la suppression de la transaction.' })
       }
 
-      console.log(`Transaction supprimée: ${id} par ${user.email}`)
+      // Transaction deleted successfully
       return res.status(200).json({ success: true })
 
     } catch (err) {
