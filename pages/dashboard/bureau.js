@@ -5,11 +5,18 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
+import Button from '../../components/Button'
+import BureauMemberForm from '../../components/BureauMemberForm'
 
 export default function BureauManagement() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [members, setMembers] = useState([])
+  const [showForm, setShowForm] = useState(false)
+  const [editingMember, setEditingMember] = useState(null)
+  const [actionLoading, setActionLoading] = useState(null)
+  const [message, setMessage] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     loadData()
@@ -34,13 +41,153 @@ export default function BureauManagement() {
       return
     }
 
-    const { data: bureauData } = await supabase
-      .from('bureau_members')
-      .select('*')
-      .order('sort_order', { ascending: true })
-
-    setMembers(bureauData || [])
+    // Charger les membres via API
+    await loadMembers()
     setLoading(false)
+  }
+
+  const loadMembers = async () => {
+    try {
+      const response = await fetch('/api/admin/bureau')
+      if (!response.ok) throw new Error('Erreur de chargement')
+      const data = await response.json()
+      setMembers(data.members || [])
+    } catch (err) {
+      console.error('Error loading members:', err)
+      setError('Erreur lors du chargement des membres')
+    }
+  }
+
+  const handleCreate = async (formData) => {
+    setError(null)
+    setMessage(null)
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch('/api/admin/bureau', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          name: formData.name || null,
+          photoUrl: formData.photo_url || null,
+          sortOrder: parseInt(formData.display_order),
+          isVisible: formData.is_active
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la création')
+      }
+
+      setMessage('Membre ajouté avec succès')
+      setShowForm(false)
+      await loadMembers()
+    } catch (err) {
+      console.error('Error creating member:', err)
+      setError(err.message)
+    }
+  }
+
+  const handleUpdate = async (formData) => {
+    setError(null)
+    setMessage(null)
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch('/api/admin/bureau', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          id: editingMember.id,
+          title: formData.title,
+          name: formData.name || null,
+          photoUrl: formData.photo_url || null,
+          sortOrder: parseInt(formData.display_order),
+          isVisible: formData.is_active
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la mise à jour')
+      }
+
+      setMessage('Membre mis à jour avec succès')
+      setShowForm(false)
+      setEditingMember(null)
+      await loadMembers()
+    } catch (err) {
+      console.error('Error updating member:', err)
+      setError(err.message)
+    }
+  }
+
+  const handleDelete = async (memberId) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce membre ?')) {
+      return
+    }
+
+    setActionLoading(memberId)
+    setError(null)
+    setMessage(null)
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login')
+        return
+      }
+
+      const response = await fetch('/api/admin/bureau', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ id: memberId })
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la suppression')
+      }
+
+      setMessage('Membre supprimé avec succès')
+      await loadMembers()
+    } catch (err) {
+      console.error('Error deleting member:', err)
+      setError(err.message)
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleEdit = (member) => {
+    setEditingMember(member)
+    setShowForm(true)
+    setMessage(null)
+    setError(null)
+  }
+
+  const handleCancelForm = () => {
+    setShowForm(false)
+    setEditingMember(null)
+    setError(null)
   }
 
   if (loading) {
@@ -60,58 +207,120 @@ export default function BureauManagement() {
       </header>
 
       <section style={{ marginBottom: '60px' }}>
-        <h2>Carte "Le Bureau"</h2>
-        <p style={{ marginBottom: '20px' }}>
-          Gérer l'affichage des membres du bureau sur la page d'accueil.
-        </p>
-
-        <div style={{ 
-          padding: '20px',
-          backgroundColor: '#fff3cd',
-          borderRadius: '8px',
-          marginBottom: '20px',
-          border: '1px solid #ffc107'
-        }}>
-          <p style={{ margin: 0, color: '#856404' }}>
-            ⚠️ <strong>Fonctionnalité à implémenter :</strong> Interface CRUD pour gérer les membres du bureau.
-            Utilisez l'API <code>/api/admin/bureau</code> (GET, POST, PUT, DELETE).
-          </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h2 style={{ margin: 0 }}>Carte "Le Bureau"</h2>
+          <Button onClick={() => setShowForm(!showForm)}>
+            {showForm ? 'Annuler' : '+ Ajouter un membre'}
+          </Button>
         </div>
 
+        {/* Messages de feedback */}
+        {message && (
+          <div style={{ 
+            padding: '12px 20px',
+            backgroundColor: '#d4edda',
+            color: '#155724',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            border: '1px solid #c3e6cb'
+          }}>
+            {message}
+          </div>
+        )}
+
+        {error && (
+          <div style={{ 
+            padding: '12px 20px',
+            backgroundColor: '#f8d7da',
+            color: '#721c24',
+            borderRadius: '4px',
+            marginBottom: '20px',
+            border: '1px solid #f5c6cb'
+          }}>
+            {error}
+          </div>
+        )}
+
+        {/* Formulaire de création/édition */}
+        {showForm && (
+          <BureauMemberForm
+            member={editingMember}
+            onSubmit={editingMember ? handleUpdate : handleCreate}
+            onCancel={handleCancelForm}
+          />
+        )}
+
+        {/* Liste des membres */}
         {members.length === 0 ? (
-          <p>Aucun membre du bureau configuré.</p>
+          <p style={{ color: '#666', padding: '20px', textAlign: 'center', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+            Aucun membre du bureau configuré. Cliquez sur "Ajouter un membre" pour commencer.
+          </p>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
             {members.map(member => (
               <div key={member.id} style={{ 
                 border: '1px solid #ddd',
                 borderRadius: '8px',
-                padding: '15px',
-                backgroundColor: '#f9f9f9',
-                textAlign: 'center'
+                padding: '20px',
+                backgroundColor: '#fff',
+                position: 'relative'
               }}>
                 {member.photo_url && (
                   <img 
                     src={member.photo_url} 
-                    alt={member.name || member.title}
+                    alt={member.name || member.role}
                     style={{ 
                       width: '80px', 
                       height: '80px', 
                       borderRadius: '50%', 
                       objectFit: 'cover',
-                      marginBottom: '10px'
+                      marginBottom: '15px',
+                      display: 'block',
+                      margin: '0 auto 15px'
                     }}
                   />
                 )}
-                <h4 style={{ margin: '5px 0' }}>{member.title}</h4>
-                {member.name && <p style={{ margin: '5px 0', color: '#666' }}>{member.name}</p>}
-                <p style={{ 
+                <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+                  <h4 style={{ margin: '0 0 5px 0', color: '#333' }}>{member.role}</h4>
+                  {member.name && <p style={{ margin: '0', color: '#666', fontSize: '14px' }}>{member.name}</p>}
+                </div>
+                
+                <div style={{ 
                   fontSize: '12px',
-                  color: member.is_visible ? '#4CAF50' : '#999',
-                  marginTop: '10px'
+                  color: member.is_active ? '#4CAF50' : '#999',
+                  textAlign: 'center',
+                  marginBottom: '15px',
+                  fontWeight: '600'
                 }}>
-                  {member.is_visible ? '✓ Visible' : '✗ Masqué'}
-                </p>
+                  {member.is_active ? '✓ Visible' : '✗ Masqué'}
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                  <Button
+                    onClick={() => handleEdit(member)}
+                    style={{ 
+                      fontSize: '13px', 
+                      padding: '6px 16px',
+                      backgroundColor: '#3498db',
+                      borderColor: '#3498db'
+                    }}
+                    disabled={actionLoading === member.id}
+                  >
+                    Éditer
+                  </Button>
+                  <Button
+                    onClick={() => handleDelete(member.id)}
+                    style={{ 
+                      fontSize: '13px', 
+                      padding: '6px 16px',
+                      backgroundColor: '#e74c3c',
+                      borderColor: '#e74c3c'
+                    }}
+                    disabled={actionLoading === member.id}
+                  >
+                    {actionLoading === member.id ? 'Suppression...' : 'Supprimer'}
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
