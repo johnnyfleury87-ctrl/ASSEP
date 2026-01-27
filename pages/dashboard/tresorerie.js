@@ -62,14 +62,18 @@ export default function Tresorerie() {
       })
 
       if (!response.ok) {
-        throw new Error('Erreur lors du chargement des transactions')
+        const errorData = await response.json().catch(() => ({}))
+        const errorMsg = errorData.error || `Erreur ${response.status}`
+        console.error('API error:', errorMsg, errorData)
+        throw new Error(errorMsg)
       }
 
       const data = await response.json()
+      console.log('✅ Transactions chargées:', data)
       setTransactions(data.transactions || [])
       setBalance(data.balance || 0)
     } catch (err) {
-      console.error('Load error:', err)
+      console.error('❌ Load error:', err)
       setError(err.message)
     } finally {
       setLoading(false)
