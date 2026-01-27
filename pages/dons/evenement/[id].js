@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react'
 import QRCode from 'qrcode'
 import { supabase } from '../../../lib/supabaseClient'
 import Layout from '../../../components/Layout'
+import safeLog from '../../../lib/logger'
 
 export default function DonsEvenement({ event, donationCounter }) {
   const canvasRef = useRef(null)
@@ -15,7 +16,7 @@ export default function DonsEvenement({ event, donationCounter }) {
   useEffect(() => {
     if (canvasRef.current && event) {
       QRCode.toCanvas(canvasRef.current, donationUrl, { width: 300 }, (error) => {
-        if (error) console.error('QR Code error:', error)
+        if (error) safeLog.error('QR Code error:', error)
       })
     }
   }, [donationUrl, event])
@@ -108,7 +109,7 @@ export async function getServerSideProps({ params }) {
       }
     }
   } catch (error) {
-    console.error('Error:', error)
+    safeLog.error('Error:', error)
     return { props: { event: null } }
   }
 }

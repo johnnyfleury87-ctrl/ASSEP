@@ -9,6 +9,7 @@
  * Accessible uniquement aux président et vice-président
  */
 import { supabaseAdmin } from '../../../lib/supabaseServer';
+import safeLog from '../../../lib/logger';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -66,7 +67,7 @@ export default async function handler(req, res) {
       .single();
 
     if (updateError) {
-      console.error('Erreur approbation:', updateError);
+      safeLog.error('Erreur approbation:', updateError);
       return res.status(400).json({ 
         error: updateError.message || 'Erreur lors de l\'approbation' 
       });
@@ -79,7 +80,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Erreur API approve:', error);
+    safeLog.error('Erreur API approve:', error);
     return res.status(500).json({ 
       error: 'Erreur serveur',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined

@@ -4,6 +4,7 @@
  */
 import { supabaseAdmin } from '../../../lib/supabaseAdmin';
 import { createAnonClient } from '../../../lib/supabaseAnonServer';
+import safeLog from '../../../lib/logger';
 
 export default async function handler(req, res) {
   try {

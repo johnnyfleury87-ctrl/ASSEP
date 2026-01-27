@@ -7,6 +7,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Button from '../../components/Button'
 import BureauMemberForm from '../../components/BureauMemberForm'
+import safeLog from '../../lib/logger'
 
 export default function BureauManagement() {
   const router = useRouter()
@@ -53,7 +54,7 @@ export default function BureauManagement() {
       const data = await response.json()
       setMembers(data.members || [])
     } catch (err) {
-      console.error('Error loading members:', err)
+      safeLog.error('Error loading members:', err)
       setError('Erreur lors du chargement des membres')
     }
   }
@@ -96,7 +97,7 @@ export default function BureauManagement() {
       setShowForm(false)
       await loadMembers()
     } catch (err) {
-      console.error('Error creating member:', err)
+      safeLog.error('Error creating member:', err)
       setError(err.message)
     }
   }
@@ -141,7 +142,7 @@ export default function BureauManagement() {
       setEditingMember(null)
       await loadMembers()
     } catch (err) {
-      console.error('Error updating member:', err)
+      safeLog.error('Error updating member:', err)
       setError(err.message)
     }
   }
@@ -178,7 +179,7 @@ export default function BureauManagement() {
       setMessage('Membre supprimé avec succès')
       await loadMembers()
     } catch (err) {
-      console.error('Error deleting member:', err)
+      safeLog.error('Error deleting member:', err)
       setError(err.message)
     } finally {
       setActionLoading(null)

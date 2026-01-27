@@ -13,6 +13,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
 import { useRouter } from 'next/router';
 import Layout from '../../../components/Layout';
+import safeLog from '../../../lib/logger'
 
 export default function JetcUsersManagement() {
   const router = useRouter();
@@ -66,7 +67,7 @@ export default function JetcUsersManagement() {
 
       await loadUsers();
     } catch (err) {
-      console.error('Erreur chargement:', err);
+      safeLog.error('Erreur chargement:', err);
       setError('Erreur lors du chargement');
       setLoading(false);
     }
@@ -91,7 +92,7 @@ export default function JetcUsersManagement() {
 
       setUsers(data.users || []);
     } catch (err) {
-      console.error('Erreur:', err);
+      safeLog.error('Erreur:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -137,7 +138,7 @@ export default function JetcUsersManagement() {
       await loadUsers();
 
     } catch (err) {
-      console.error('Erreur:', err);
+      safeLog.error('Erreur:', err);
       setError(err.message);
     } finally {
       setCreating(false);
@@ -171,7 +172,7 @@ export default function JetcUsersManagement() {
       await loadUsers();
 
     } catch (err) {
-      console.error('Erreur:', err);
+      safeLog.error('Erreur:', err);
       alert('❌ ' + err.message);
     }
   };
@@ -191,7 +192,7 @@ export default function JetcUsersManagement() {
       await loadUsers();
 
     } catch (err) {
-      console.error('Erreur:', err);
+      safeLog.error('Erreur:', err);
       alert('❌ ' + err.message);
     }
   };
@@ -211,7 +212,7 @@ export default function JetcUsersManagement() {
       await loadUsers();
 
     } catch (err) {
-      console.error('Erreur:', err);
+      safeLog.error('Erreur:', err);
       alert('❌ ' + err.message);
     }
   };
@@ -243,7 +244,7 @@ export default function JetcUsersManagement() {
       await loadUsers();
 
     } catch (err) {
-      console.error('Erreur:', err);
+      safeLog.error('Erreur:', err);
       alert('❌ ' + err.message);
     }
   };

@@ -7,6 +7,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Button from '../../components/Button'
 import TransactionForm from '../../components/TransactionForm'
+import safeLog from '../../lib/logger'
 
 export default function Tresorerie() {
   const router = useRouter()
@@ -64,16 +65,16 @@ export default function Tresorerie() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         const errorMsg = errorData.error || `Erreur ${response.status}`
-        console.error('API error:', errorMsg, errorData)
+        safeLog.error('API error:', errorMsg, errorData)
         throw new Error(errorMsg)
       }
 
       const data = await response.json()
-      console.log('✅ Transactions chargées:', data)
+      safeLog.debug('✅ Transactions chargées:', data)
       setTransactions(data.transactions || [])
       setBalance(data.balance || 0)
     } catch (err) {
-      console.error('❌ Load error:', err)
+      safeLog.error('❌ Load error:', err)
       setError(err.message)
     } finally {
       setLoading(false)

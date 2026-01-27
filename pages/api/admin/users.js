@@ -6,6 +6,7 @@
  */
 import { supabaseAdmin } from '../../../lib/supabaseAdmin';
 import { createAnonClient } from '../../../lib/supabaseAnonServer';
+import safeLog from '../../../lib/logger';
 
 export default async function handler(req, res) {
   try {
@@ -149,7 +150,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
 
   } catch (error) {
-    console.error('❌ API error:', error.message);
+    safeLog.error('❌ API error:', error.message);
     return res.status(500).json({ 
       error: 'Erreur serveur',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined

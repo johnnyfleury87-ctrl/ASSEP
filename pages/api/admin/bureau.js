@@ -3,12 +3,13 @@
 
 import { supabaseAdmin } from '../../../lib/supabaseServer'
 import { createServerSupabaseClient } from '../../../lib/supabaseServer'
+import safeLog from '../../../lib/logger'
 
 async function checkAdmin(req, res) {
   // Récupérer le token depuis l'Authorization header
   const authHeader = req.headers.authorization
   if (!authHeader) {
-    console.error('❌ No authorization header')
+    safeLog.error('No authorization header')
     return { authorized: false, userId: null }
   }
 
@@ -18,7 +19,7 @@ async function checkAdmin(req, res) {
   const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
 
   if (authError || !user) {
-    console.error('❌ Auth error:', authError?.message || 'No user')
+    safeLog.auth('Auth error', { error: authError?.message || 'No user' })
     return { authorized: false, userId: null }
   }
 
@@ -29,22 +30,22 @@ async function checkAdmin(req, res) {
     .single()
 
   if (profileError) {
-    console.error('❌ Profile error:', profileError.message)
+    safeLog.error('Profile error:', profileError.message)
     return { authorized: false, userId: user.id }
   }
 
   if (!profile) {
-    console.error('❌ No profile found for user:', user.id)
+    safeLog.error('No profile found for user')
     return { authorized: false, userId: user.id }
   }
 
-  console.log('✅ User profile:', { userId: user.id, role: profile.role, isJetcAdmin: profile.is_jetc_admin })
+  safeLog.auth('User profile loaded', { userId: user.id, role: profile.role, isJetcAdmin: profile.is_jetc_admin })
 
   // Autoriser les présidents, vice-présidents ET JETC admins
   const isAuthorized = profile.is_jetc_admin || ['president', 'vice_president'].includes(profile.role)
   
   if (!isAuthorized) {
-    console.error('❌ User not authorized. Role:', profile.role, 'isJetcAdmin:', profile.is_jetc_admin)
+    safeLog.error('User not authorized', { role: profile.role })
   }
 
   return { authorized: isAuthorized, userId: user.id }
@@ -65,7 +66,7 @@ export default async function handler(req, res) {
         .order('display_order', { ascending: true })
 
       if (error) {
-        console.error('❌ Failed to fetch bureau members:', error.message)
+        safeLog.error('Failed to fetch bureau members:', error.message)
         return res.status(500).json({ error: 'Failed to fetch bureau members' })
       }
 
@@ -102,7 +103,7 @@ export default async function handler(req, res) {
         .single()
 
       if (error) {
-        console.error('Insert error:', error)
+        safeLog.error('Insert error:', error)
         return res.status(500).json({ error: 'Failed to create bureau member' })
       }
 
@@ -136,7 +137,7 @@ export default async function handler(req, res) {
         .single()
 
       if (error) {
-        console.error('Update error:', error)
+        safeLog.error('Update error:', error)
         return res.status(500).json({ error: 'Failed to update bureau member' })
       }
 
@@ -157,7 +158,7 @@ export default async function handler(req, res) {
         .eq('id', id)
 
       if (error) {
-        console.error('Delete error:', error)
+        safeLog.error('Delete error:', error)
         return res.status(500).json({ error: 'Failed to delete bureau member' })
       }
 
@@ -167,7 +168,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
 
   } catch (error) {
-    console.error('API error:', error)
+    safeLog.error('API error:', error)
     return res.status(500).json({ error: 'Internal server error' })
   }
 }

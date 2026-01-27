@@ -75,7 +75,7 @@ export default async function handler(req, res) {
       .single()
 
     if (signupError) {
-      console.error('Signup error:', signupError)
+      safeLog.error('Signup error:', signupError)
       
       // Gérer l'erreur de capacité
       if (signupError.message?.includes('complet')) {
@@ -116,7 +116,7 @@ export default async function handler(req, res) {
     })
 
   } catch (error) {
-    console.error('API error:', error)
+    safeLog.error('API error:', error)
     return res.status(500).json({ error: 'Internal server error' })
   }
 }

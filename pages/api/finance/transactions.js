@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   
   const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
   if (authError || !user) {
-    console.error('❌ Auth error:', authError?.message || 'No user')
+    safeLog.error('❌ Auth error:', authError?.message || 'No user')
     return res.status(401).json({ error: 'Token invalide ou expiré.' })
   }
 
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     .single()
 
   if (profileError || !profile) {
-    console.error('Profile error:', profileError)
+    safeLog.error('Profile error:', profileError)
     return res.status(403).json({ error: 'Profil introuvable.' })
   }
 
@@ -84,7 +84,7 @@ export default async function handler(req, res) {
       const { data: transactions, error } = await query
 
       if (error) {
-        console.error('Fetch error:', error)
+        safeLog.error('Fetch error:', error)
         return res.status(500).json({ error: 'Erreur lors de la récupération des transactions.' })
       }
 
@@ -105,7 +105,7 @@ export default async function handler(req, res) {
       })
 
     } catch (err) {
-      console.error('GET error:', err)
+      safeLog.error('GET error:', err)
       return res.status(500).json({ error: 'Erreur serveur.' })
     }
   }
@@ -167,7 +167,7 @@ export default async function handler(req, res) {
         .single()
 
       if (error) {
-        console.error('Insert error:', error)
+        safeLog.error('Insert error:', error)
         return res.status(500).json({ error: 'Erreur lors de la création de la transaction.' })
       }
 
@@ -175,7 +175,7 @@ export default async function handler(req, res) {
       return res.status(201).json({ transaction })
 
     } catch (err) {
-      console.error('POST error:', err)
+      safeLog.error('POST error:', err)
       return res.status(500).json({ error: 'Erreur serveur.' })
     }
   }
@@ -250,7 +250,7 @@ export default async function handler(req, res) {
         .single()
 
       if (error) {
-        console.error('Update error:', error)
+        safeLog.error('Update error:', error)
         return res.status(500).json({ error: 'Erreur lors de la mise à jour de la transaction.' })
       }
 
@@ -258,7 +258,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ transaction })
 
     } catch (err) {
-      console.error('PUT error:', err)
+      safeLog.error('PUT error:', err)
       return res.status(500).json({ error: 'Erreur serveur.' })
     }
   }
@@ -293,7 +293,7 @@ export default async function handler(req, res) {
         .eq('id', id)
 
       if (error) {
-        console.error('Delete error:', error)
+        safeLog.error('Delete error:', error)
         return res.status(500).json({ error: 'Erreur lors de la suppression de la transaction.' })
       }
 
@@ -301,7 +301,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true })
 
     } catch (err) {
-      console.error('DELETE error:', err)
+      safeLog.error('DELETE error:', err)
       return res.status(500).json({ error: 'Erreur serveur.' })
     }
   }

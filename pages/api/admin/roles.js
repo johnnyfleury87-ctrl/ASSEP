@@ -77,7 +77,7 @@ export default async function handler(req, res) {
       .single()
 
     if (updateError) {
-      console.error('Error updating role:', updateError)
+      safeLog.error('Error updating role:', updateError)
       return res.status(500).json({ error: 'Erreur lors de la mise à jour du rôle' })
     }
 
@@ -86,7 +86,7 @@ export default async function handler(req, res) {
       profile: updatedProfile
     })
   } catch (error) {
-    console.error('Unexpected error:', error)
+    safeLog.error('Unexpected error:', error)
     return res.status(500).json({ error: 'Erreur serveur' })
   }
 }

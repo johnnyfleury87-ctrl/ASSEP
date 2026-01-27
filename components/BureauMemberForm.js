@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import Button from './Button'
+import safeLog from '../lib/logger'
 
 export default function BureauMemberForm({ member, onSubmit, onCancel }) {
   const [formData, setFormData] = useState({
@@ -90,7 +91,7 @@ export default function BureauMemberForm({ member, onSubmit, onCancel }) {
         })
       }
     } catch (error) {
-      console.error('Error submitting form:', error)
+      safeLog.error('Error submitting form:', error)
     } finally {
       setLoading(false)
     }

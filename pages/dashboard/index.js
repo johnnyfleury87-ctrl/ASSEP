@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
+import safeLog from '../../lib/logger'
 
 export default function Dashboard() {
   const router = useRouter()
@@ -81,7 +82,7 @@ export default function Dashboard() {
         balance: balance
       })
     } catch (error) {
-      console.error('Error loading stats:', error)
+      safeLog.error('Error loading stats:', error)
     }
   }
 

@@ -119,7 +119,7 @@ export default async function handler(req, res) {
       .single()
 
     if (createError) {
-      console.error('Error creating campaign:', createError)
+      safeLog.error('Error creating campaign:', createError)
       return res.status(500).json({ error: 'Erreur lors de la création de la campagne' })
     }
 
@@ -131,7 +131,7 @@ export default async function handler(req, res) {
     })
 
   } catch (error) {
-    console.error('Unexpected error:', error)
+    safeLog.error('Unexpected error:', error)
     return res.status(500).json({ error: 'Erreur serveur' })
   }
 }

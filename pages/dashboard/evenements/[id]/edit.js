@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../../../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
+import safeLog from '../../../../lib/logger'
 
 export default function EditEvent() {
   const router = useRouter()
@@ -85,7 +86,7 @@ export default function EditEvent() {
 
       setLoading(false)
     } catch (err) {
-      console.error('Error:', err)
+      safeLog.error('Error:', err)
       setError(err.message)
       setLoading(false)
     }

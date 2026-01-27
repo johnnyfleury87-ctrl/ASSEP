@@ -4,6 +4,7 @@
 import { supabase } from '../../lib/supabaseClient'
 import Link from 'next/link'
 import Layout from '../../components/Layout'
+import safeLog from '../../lib/logger'
 
 export default function EventsList({ upcomingEvents, pastEvents }) {
   return (
@@ -196,7 +197,7 @@ export async function getServerSideProps() {
       }
     }
   } catch (error) {
-    console.error('Error:', error)
+    safeLog.error('Error:', error)
     return {
       props: {
         upcomingEvents: [],

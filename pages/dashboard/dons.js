@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Button from '../../components/Button'
+import safeLog from '../../lib/logger'
 
 export default function DonsManagement() {
   const router = useRouter()
@@ -72,7 +73,7 @@ export default function DonsManagement() {
       setDonations(data.donations || [])
       setStats(data.stats || null)
     } catch (err) {
-      console.error('Load error:', err)
+      safeLog.error('Load error:', err)
       setError(err.message)
     } finally {
       setLoading(false)

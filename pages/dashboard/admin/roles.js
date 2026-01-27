@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Button from '../../../components/Button'
+import safeLog from '../../../lib/logger'
 
 export default function RolesManagement() {
   const router = useRouter()
@@ -52,7 +53,7 @@ export default function RolesManagement() {
 
       await loadUsers(session.user.access_token)
     } catch (err) {
-      console.error('Error:', err)
+      safeLog.error('Error:', err)
       setError('Erreur lors du chargement')
       setLoading(false)
     }
@@ -73,7 +74,7 @@ export default function RolesManagement() {
       const data = await response.json()
       setUsers(data.users || [])
     } catch (err) {
-      console.error('Error loading users:', err)
+      safeLog.error('Error loading users:', err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -115,7 +116,7 @@ export default function RolesManagement() {
       // Recharger les users
       await loadUsers(session.user.access_token)
     } catch (err) {
-      console.error('Error updating role:', err)
+      safeLog.error('Error updating role:', err)
       setError(err.message)
     } finally {
       setUpdating(null)

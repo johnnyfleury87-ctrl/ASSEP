@@ -7,6 +7,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Button from '../../components/Button'
 import CampaignForm from '../../components/CampaignForm'
+import safeLog from '../../lib/logger'
 
 export default function Communications() {
   const router = useRouter()
@@ -84,7 +85,7 @@ export default function Communications() {
       setShowForm(false)
       await loadCampaigns()
     } catch (err) {
-      console.error('Error creating campaign:', err)
+      safeLog.error('Error creating campaign:', err)
       setError(err.message)
     }
   }
@@ -128,7 +129,7 @@ export default function Communications() {
       setMessage(`Campagne envoyée ! ${data.sentCount} emails envoyés${data.failedCount > 0 ? `, ${data.failedCount} échecs` : ''}`)
       await loadCampaigns()
     } catch (err) {
-      console.error('Error sending campaign:', err)
+      safeLog.error('Error sending campaign:', err)
       setError(err.message)
     } finally {
       setSendingCampaign(null)

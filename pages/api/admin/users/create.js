@@ -4,6 +4,7 @@
  */
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
 import { createAnonClient } from '../../../../lib/supabaseAnonServer';
+import safeLog from '../../../../lib/logger';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -111,7 +112,7 @@ export default async function handler(req, res) {
       });
 
     if (profileUpsertError) {
-      console.error('❌ Profile upsert error:', profileUpsertError.message);
+      safeLog.error('Profile upsert error:', profileUpsertError.message);
       // Ne pas fail si profil existe déjà
     }
 
@@ -122,7 +123,7 @@ export default async function handler(req, res) {
       .eq('id', newUser.user.id)
       .single();
 
-    // User created successfully
+    safeLog.auth('User created successfully', { userId: newUser.user.id, email: newUser.user.email, role });
 
     return res.status(201).json({
       success: true,
@@ -135,7 +136,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('❌ API create user error:', error.message);
+    safeLog.error('API create user error:', error);
     return res.status(500).json({ 
       error: 'Erreur serveur',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined

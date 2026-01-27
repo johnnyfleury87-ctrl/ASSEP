@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { supabase } from '../lib/supabaseClient'
 import { supabaseAdmin } from '../lib/supabaseAdmin'
 import { HELP_SECTIONS } from '../lib/constants'
+import safeLog from '../lib/logger'
 
 export default function Home({ events, bureau, balance }) {
   return (
@@ -326,7 +327,7 @@ export async function getServerSideProps() {
       }
     }
   } catch (error) {
-    console.error('Error fetching data:', error)
+    safeLog.error('Error fetching data:', error)
     return {
       props: {
         events: [],

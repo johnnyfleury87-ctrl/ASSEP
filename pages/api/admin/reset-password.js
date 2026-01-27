@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../../../lib/supabaseServer';
+import safeLog from '../../../lib/logger';
 
 /**
  * API Admin: Réinitialiser le mot de passe d'un utilisateur
@@ -55,7 +56,7 @@ export default async function handler(req, res) {
     );
 
     if (resetError) {
-      console.error('Erreur reset password:', resetError);
+      safeLog.error('Erreur reset password:', resetError);
       return res.status(400).json({ 
         error: resetError.message || 'Erreur lors de la réinitialisation' 
       });
@@ -71,8 +72,10 @@ export default async function handler(req, res) {
       .eq('id', userId);
 
     if (updateError) {
-      console.error('Erreur mise à jour profil:', updateError);
+      safeLog.error('Erreur mise à jour profil:', updateError);
     }
+
+    safeLog.auth('Password reset', { userId });
 
     return res.status(200).json({
       success: true,
@@ -80,7 +83,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Erreur API reset password:', error);
+    safeLog.error('Erreur API reset password:', error);
     return res.status(500).json({ 
       error: 'Erreur serveur',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined

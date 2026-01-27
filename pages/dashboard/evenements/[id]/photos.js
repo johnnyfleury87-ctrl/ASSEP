@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../../../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
+import safeLog from '../../../../lib/logger'
 import { 
   STORAGE_BUCKETS, 
   EVENT_PHOTOS_BUCKET_CONFIG, 
@@ -68,7 +69,7 @@ export default function EventPhotos() {
 
       setLoading(false)
     } catch (err) {
-      console.error('Error:', err)
+      safeLog.error('Error:', err)
       setError(err.message)
       setLoading(false)
     }
@@ -82,7 +83,7 @@ export default function EventPhotos() {
       .order('display_order', { ascending: true })
 
     if (photosError) {
-      console.error('Error loading photos:', photosError)
+      safeLog.error('Error loading photos:', photosError)
     } else {
       setPhotos(photosData || [])
     }
@@ -131,7 +132,7 @@ export default function EventPhotos() {
           .upload(fileName, file)
 
         if (uploadError) {
-          console.error('Upload error:', uploadError)
+          safeLog.error('Upload error:', uploadError)
           setError(`❌ Erreur upload ${file.name}: ${uploadError.message}`)
           continue
         }
@@ -148,7 +149,7 @@ export default function EventPhotos() {
           })
 
         if (insertError) {
-          console.error('Insert error:', insertError)
+          safeLog.error('Insert error:', insertError)
           // Nettoyer le fichier uploadé
           await supabase.storage.from('event-photos').remove([fileName])
           
@@ -272,7 +273,7 @@ export default function EventPhotos() {
         .remove([photo.storage_path])
 
       if (storageError) {
-        console.error('Storage delete error:', storageError)
+        safeLog.error('Storage delete error:', storageError)
       }
 
       setSuccess('✅ Photo supprimée')

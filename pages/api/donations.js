@@ -71,7 +71,7 @@ export default async function handler(req, res) {
         const { data: donations, error } = await query
 
         if (error) {
-          console.error('Fetch error:', error)
+          safeLog.error('Fetch error:', error)
           return res.status(500).json({ error: 'Erreur lors de la récupération des donations.' })
         }
 
@@ -124,7 +124,7 @@ export default async function handler(req, res) {
       }
 
     } catch (err) {
-      console.error('GET error:', err)
+      safeLog.error('GET error:', err)
       return res.status(500).json({ error: 'Erreur serveur.' })
     }
   }
@@ -189,7 +189,7 @@ export default async function handler(req, res) {
         .single()
 
       if (error) {
-        console.error('Insert error:', error)
+        safeLog.error('Insert error:', error)
         return res.status(500).json({ error: 'Erreur lors de la création de la donation.' })
       }
 
@@ -197,7 +197,7 @@ export default async function handler(req, res) {
       return res.status(201).json({ donation })
 
     } catch (err) {
-      console.error('POST error:', err)
+      safeLog.error('POST error:', err)
       return res.status(500).json({ error: 'Erreur serveur.' })
     }
   }
@@ -279,7 +279,7 @@ export default async function handler(req, res) {
         .single()
 
       if (error) {
-        console.error('Update error:', error)
+        safeLog.error('Update error:', error)
         return res.status(500).json({ error: 'Erreur lors de la mise à jour de la donation.' })
       }
 
@@ -287,7 +287,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ donation })
 
     } catch (err) {
-      console.error('PUT error:', err)
+      safeLog.error('PUT error:', err)
       return res.status(500).json({ error: 'Erreur serveur.' })
     }
   }

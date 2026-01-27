@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import Button from './Button'
+import safeLog from '../lib/logger'
 
 export default function CampaignForm({ campaign, onSubmit, onCancel }) {
   const [formData, setFormData] = useState({
@@ -102,7 +103,7 @@ export default function CampaignForm({ campaign, onSubmit, onCancel }) {
         })
       }
     } catch (error) {
-      console.error('Error submitting form:', error)
+      safeLog.error('Error submitting form:', error)
     } finally {
       setLoading(false)
     }
