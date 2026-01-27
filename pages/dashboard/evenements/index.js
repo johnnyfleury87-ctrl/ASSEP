@@ -93,39 +93,102 @@ export default function EventsManagement() {
                     📍 {event.location}<br />
                     📅 {new Date(event.event_date).toLocaleDateString('fr-FR')}
                   </p>
-                  <p style={{ 
-                    display: 'inline-block',
-                    padding: '4px 12px',
-                    backgroundColor: event.status === 'published' ? '#4CAF50' : '#999',
-                    color: 'white',
-                    borderRadius: '4px',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    marginTop: '10px'
-                  }}>
-                    {event.status}
-                  </p>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={{
+                      padding: '4px 12px',
+                      backgroundColor: event.status === 'published' ? '#4CAF50' : '#999',
+                      color: 'white',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      fontWeight: 'bold'
+                    }}>
+                      {event.status === 'draft' ? '📝 Brouillon' : 
+                       event.status === 'published' ? '✅ Publié' : 
+                       event.status === 'archived' ? '📦 Archivé' : event.status}
+                    </span>
+                    {event.buvette_active && (
+                      <span style={{
+                        padding: '4px 8px',
+                        backgroundColor: '#fff3cd',
+                        color: '#856404',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        border: '1px solid #ffc107'
+                      }}>
+                        🍺 Buvette
+                      </span>
+                    )}
+                    {event.signups_enabled && (
+                      <span style={{
+                        padding: '4px 8px',
+                        backgroundColor: '#d1ecf1',
+                        color: '#0c5460',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        border: '1px solid #bee5eb'
+                      }}>
+                        📝 Inscriptions
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
+                  <Link href={`/dashboard/evenements/${event.id}/edit`} style={{ 
+                    padding: '8px 16px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    textDecoration: 'none',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    textAlign: 'center'
+                  }}>
+                    ✏️ Éditer
+                  </Link>
                   <Link href={`/dashboard/evenements/${event.id}/benevoles`} style={{ 
                     padding: '8px 16px',
                     backgroundColor: '#2196F3',
                     color: 'white',
                     textDecoration: 'none',
                     borderRadius: '4px',
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    textAlign: 'center'
                   }}>
-                    Bénévoles
+                    👥 Bénévoles
                   </Link>
-                  <Link href={`/dashboard/evenements/${event.id}/caisse`} style={{ 
+                  {event.buvette_active && (
+                    <Link href={`/dashboard/evenements/${event.id}/produits`} style={{ 
+                      padding: '8px 16px',
+                      backgroundColor: '#FF9800',
+                      color: 'white',
+                      textDecoration: 'none',
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                      textAlign: 'center'
+                    }}>
+                      🍺 Buvette
+                    </Link>
+                  )}
+                  <Link href={`/dashboard/evenements/${event.id}/photos`} style={{ 
                     padding: '8px 16px',
-                    backgroundColor: '#FF9800',
+                    backgroundColor: '#9C27B0',
                     color: 'white',
                     textDecoration: 'none',
                     borderRadius: '4px',
-                    fontSize: '14px'
+                    fontSize: '14px',
+                    textAlign: 'center'
                   }}>
-                    Caisse
+                    📸 Photos
+                  </Link>
+                  <Link href={`/dashboard/evenements/${event.id}/caisse`} style={{ 
+                    padding: '8px 16px',
+                    backgroundColor: '#795548',
+                    color: 'white',
+                    textDecoration: 'none',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    textAlign: 'center'
+                  }}>
+                    💰 Caisse
                   </Link>
                 </div>
               </div>

@@ -21,30 +21,48 @@ export default function EventsList({ upcomingEvents, pastEvents }) {
                 border: '1px solid #ddd', 
                 borderRadius: '8px', 
                 padding: '20px',
-                backgroundColor: '#f9f9f9'
+                backgroundColor: '#f9f9f9',
+                display: 'grid',
+                gridTemplateColumns: event.coverPhoto ? '250px 1fr' : '1fr',
+                gap: '20px',
+                alignItems: 'start'
               }}>
-                <h3>{event.name}</h3>
-                {event.description && <p style={{ color: '#666' }}>{event.description}</p>}
-                <p><strong>📍 {event.location}</strong></p>
-                <p>📅 {new Date(event.event_date).toLocaleDateString('fr-FR', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}</p>
-                <Link href={`/evenements/${event.slug}`} style={{ 
-                  display: 'inline-block',
-                  marginTop: '10px',
-                  padding: '10px 20px',
-                  backgroundColor: '#4CAF50',
-                  color: 'white',
-                  textDecoration: 'none',
-                  borderRadius: '4px'
-                }}>
-                  Voir les détails
-                </Link>
+                {event.coverPhoto && (
+                  <img 
+                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${event.coverPhoto.storage_path}`}
+                    alt={event.name}
+                    style={{
+                      width: '100%',
+                      height: '180px',
+                      objectFit: 'cover',
+                      borderRadius: '8px'
+                    }}
+                  />
+                )}
+                <div>
+                  <h3>{event.name}</h3>
+                  {event.description && <p style={{ color: '#666' }}>{event.description}</p>}
+                  <p><strong>📍 {event.location}</strong></p>
+                  <p>📅 {new Date(event.event_date).toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}</p>
+                  <Link href={`/evenements/${event.slug}`} style={{ 
+                    display: 'inline-block',
+                    marginTop: '10px',
+                    padding: '10px 20px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    textDecoration: 'none',
+                    borderRadius: '4px'
+                  }}>
+                    Voir les détails
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
@@ -64,12 +82,38 @@ export default function EventsList({ upcomingEvents, pastEvents }) {
                 borderRadius: '8px', 
                 padding: '15px',
                 backgroundColor: '#fafafa',
-                opacity: 0.8
+                opacity: 0.8,
+                display: 'grid',
+                gridTemplateColumns: event.coverPhoto ? '150px 1fr' : '1fr',
+                gap: '15px',
+                alignItems: 'start'
               }}>
-                <h4>{event.name}</h4>
-                <p style={{ fontSize: '14px', color: '#666' }}>
-                  {new Date(event.event_date).toLocaleDateString('fr-FR')} - {event.location}
-                </p>
+                {event.coverPhoto && (
+                  <img 
+                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${event.coverPhoto.storage_path}`}
+                    alt={event.name}
+                    style={{
+                      width: '100%',
+                      height: '100px',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                      filter: 'grayscale(30%)'
+                    }}
+                  />
+                )}
+                <div>
+                  <h4>{event.name}</h4>
+                  <p style={{ fontSize: '14px', color: '#666' }}>
+                    {new Date(event.event_date).toLocaleDateString('fr-FR')} - {event.location}
+                  </p>
+                  <Link href={`/evenements/${event.slug}`} style={{ 
+                    fontSize: '14px',
+                    color: '#666',
+                    textDecoration: 'underline'
+                  }}>
+                    Voir les détails
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
@@ -89,19 +133,61 @@ export async function getServerSideProps() {
     // Événements à venir
     const { data: upcomingEvents } = await supabase
       .from('events')
-      .select('id, slug, name, description, location, event_date')
+      .select(`
+        id, 
+        slug, 
+        name, 
+        description, 
+        location, 
+        event_date
+      `)
       .eq('status', 'published')
       .gte('event_date', now)
       .order('event_date', { ascending: true })
 
+    // Charger photos de couverture pour chaque événement
+    if (upcomingEvents && upcomingEvents.length > 0) {
+      for (const event of upcomingEvents) {
+        const { data: coverPhoto } = await supabase
+          .from('event_photos')
+          .select('storage_path')
+          .eq('event_id', event.id)
+          .eq('is_cover', true)
+          .single()
+        
+        event.coverPhoto = coverPhoto
+      }
+    }
+
     // Événements passés (10 derniers)
     const { data: pastEvents } = await supabase
       .from('events')
-      .select('id, slug, name, location, event_date')
+      .select(`
+        id, 
+        slug, 
+        name, 
+        description, 
+        location, 
+        event_date
+      `)
       .eq('status', 'published')
       .lt('event_date', now)
       .order('event_date', { ascending: false })
       .limit(10)
+
+    // Charger photos de couverture pour les événements passés
+    if (pastEvents && pastEvents.length > 0) {
+      for (const event of pastEvents) {
+        const { data: coverPhoto } = await supabase
+          .from('event_photos')
+          .select('storage_path')
+          .eq('event_id', event.id)
+          .eq('is_cover', true)
+          .single()
+        
+        event.coverPhoto = coverPhoto
+      }
+    }
 
     return {
       props: {

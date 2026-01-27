@@ -6,7 +6,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Layout from '../../components/Layout'
 
-export default function EventDetail({ event, buvette, paymentMethods, tasksWithShifts, donationCounter }) {
+export default function EventDetail({ event, buvette, paymentMethods, tasksWithShifts, donationCounter, photos }) {
   const [formData, setFormData] = useState({
     shiftId: '',
     firstName: '',
@@ -90,6 +90,44 @@ export default function EventDetail({ event, buvette, paymentMethods, tasksWithS
           minute: '2-digit'
         })}</p>
       </div>
+
+      {/* Galerie photos */}
+      {photos && photos.length > 0 && (
+        <section style={{ margin: '40px 0' }}>
+          <h2>📸 Galerie photos</h2>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
+            gap: '15px' 
+          }}>
+            {photos.map(photo => (
+              <div key={photo.id} style={{
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                backgroundColor: 'white'
+              }}>
+                <img
+                  src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/event-photos/${photo.storage_path}`}
+                  alt={photo.caption || 'Photo événement'}
+                  style={{
+                    width: '100%',
+                    height: '200px',
+                    objectFit: 'cover'
+                  }}
+                />
+                {photo.caption && (
+                  <div style={{ padding: '10px' }}>
+                    <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
+                      {photo.caption}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Buvette */}
       {event.buvette_active && buvette && buvette.length > 0 && (
@@ -390,13 +428,21 @@ export async function getServerSideProps({ params }) {
       .eq('event_id', event.id)
       .single()
 
+    // Récupérer les photos
+    const { data: photos } = await supabase
+      .from('event_photos')
+      .select('*')
+      .eq('event_id', event.id)
+      .order('display_order', { ascending: true })
+
     return {
       props: {
         event,
         buvette: buvette || [],
         paymentMethods: paymentMethods || [],
         tasksWithShifts: tasksWithShifts || [],
-        donationCounter: donationCounter || null
+        donationCounter: donationCounter || null,
+        photos: photos || []
       }
     }
   } catch (error) {
