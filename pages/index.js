@@ -9,11 +9,11 @@ import Link from 'next/link'
 import { supabase } from '../lib/supabaseClient'
 import { HELP_SECTIONS } from '../lib/constants'
 
-export default function Home({ events, bureau }) {
+export default function Home({ events, bureau, balance }) {
   return (
     <Layout>
       {/* Hero Section */}
-      <Hero />
+      <Hero balance={balance} />
 
       {/* Section: Prochains événements */}
       <section style={{
@@ -288,10 +288,10 @@ export async function getServerSideProps() {
     // Récupérer les événements à venir
     const { data: events } = await supabase
       .from('events')
-      .select('id, slug, title, theme, location, starts_at, status')
+      .select('id, slug, name, description, location, event_date, status')
       .eq('status', 'published')
-      .gte('starts_at', new Date().toISOString())
-      .order('starts_at', { ascending: true })
+      .gte('event_date', new Date().toISOString())
+      .order('event_date', { ascending: true })
       .limit(3)
 
     // Récupérer les membres du bureau actifs
@@ -301,10 +301,27 @@ export async function getServerSideProps() {
       .eq('is_active', true)
       .order('display_order', { ascending: true })
 
+    // Calculer le solde de la trésorerie
+    const { data: transactions } = await supabase
+      .from('transactions')
+      .select('type, amount')
+    
+    let balance = 0
+    if (transactions) {
+      transactions.forEach(t => {
+        if (t.type === 'income') {
+          balance += parseFloat(t.amount)
+        } else {
+          balance -= parseFloat(t.amount)
+        }
+      })
+    }
+
     return {
       props: {
         events: events || [],
-        bureau: bureau || []
+        bureau: bureau || [],
+        balance: parseFloat(balance.toFixed(2))
       }
     }
   } catch (error) {

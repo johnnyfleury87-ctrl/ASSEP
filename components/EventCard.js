@@ -42,18 +42,23 @@ export default function EventCard({ event }) {
         margin: 0,
         color: '#333'
       }}>
-        {event.title}
+        {event.name}
       </h3>
 
-      {/* Thème */}
-      {event.theme && (
+      {/* Description */}
+      {event.description && (
         <p style={{
           fontSize: '14px',
           color: '#666',
           margin: 0,
-          fontStyle: 'italic'
+          lineHeight: '1.5',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical'
         }}>
-          {event.theme}
+          {event.description}
         </p>
       )}
 
@@ -66,7 +71,7 @@ export default function EventCard({ event }) {
         color: '#555'
       }}>
         <span>📅</span>
-        <span>{formatDate(event.starts_at)}</span>
+        <span>{formatDate(event.event_date)}</span>
       </div>
 
       {/* Lieu */}

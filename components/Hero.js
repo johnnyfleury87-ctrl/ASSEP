@@ -4,7 +4,7 @@
 import Button from './Button'
 import { ASSEP, TRUST_POINTS } from '../lib/constants'
 
-export default function Hero() {
+export default function Hero({ balance }) {
   return (
     <section style={{
       position: 'relative',
@@ -99,6 +99,24 @@ export default function Hero() {
               {point}
             </div>
           ))}
+          
+          {/* Afficher le solde si disponible */}
+          {balance !== undefined && (
+            <div 
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                borderRadius: '20px',
+                backdropFilter: 'blur(10px)',
+                fontWeight: 'bold'
+              }}
+            >
+              💰 Solde trésorerie: {balance.toFixed(2)} €
+            </div>
+          )}
         </div>
       </div>
 
