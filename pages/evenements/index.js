@@ -23,10 +23,10 @@ export default function EventsList({ upcomingEvents, pastEvents }) {
                 padding: '20px',
                 backgroundColor: '#f9f9f9'
               }}>
-                <h3>{event.title}</h3>
-                {event.theme && <p style={{ color: '#666' }}>{event.theme}</p>}
+                <h3>{event.name}</h3>
+                {event.description && <p style={{ color: '#666' }}>{event.description}</p>}
                 <p><strong>📍 {event.location}</strong></p>
-                <p>📅 {new Date(event.starts_at).toLocaleDateString('fr-FR', {
+                <p>📅 {new Date(event.event_date).toLocaleDateString('fr-FR', {
                   weekday: 'long',
                   year: 'numeric',
                   month: 'long',
@@ -66,9 +66,9 @@ export default function EventsList({ upcomingEvents, pastEvents }) {
                 backgroundColor: '#fafafa',
                 opacity: 0.8
               }}>
-                <h4>{event.title}</h4>
+                <h4>{event.name}</h4>
                 <p style={{ fontSize: '14px', color: '#666' }}>
-                  {new Date(event.starts_at).toLocaleDateString('fr-FR')} - {event.location}
+                  {new Date(event.event_date).toLocaleDateString('fr-FR')} - {event.location}
                 </p>
               </div>
             ))}
@@ -89,18 +89,18 @@ export async function getServerSideProps() {
     // Événements à venir
     const { data: upcomingEvents } = await supabase
       .from('events')
-      .select('id, slug, title, theme, location, starts_at')
+      .select('id, slug, name, description, location, event_date')
       .eq('status', 'published')
-      .gte('starts_at', now)
-      .order('starts_at', { ascending: true })
+      .gte('event_date', now)
+      .order('event_date', { ascending: true })
 
     // Événements passés (10 derniers)
     const { data: pastEvents } = await supabase
       .from('events')
-      .select('id, slug, title, location, starts_at')
+      .select('id, slug, name, location, event_date')
       .eq('status', 'published')
-      .lt('starts_at', now)
-      .order('starts_at', { ascending: false })
+      .lt('event_date', now)
+      .order('event_date', { ascending: false })
       .limit(10)
 
     return {

@@ -122,7 +122,7 @@ export default async function handler(req, res) {
       .eq('id', newUser.user.id)
       .single();
 
-    console.log('✅ admin action=create_user ok email=', email);
+    // User created successfully
 
     return res.status(201).json({
       success: true,

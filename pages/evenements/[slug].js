@@ -76,12 +76,12 @@ export default function EventDetail({ event, buvette, paymentMethods, tasksWithS
   return (
     <Layout>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-        <h1>{event.title}</h1>
-        {event.theme && <p style={{ fontSize: '18px', color: '#666' }}>{event.theme}</p>}
+        <h1>{event.name}</h1>
+        {event.description && <p style={{ fontSize: '18px', color: '#666' }}>{event.description}</p>}
       
       <div style={{ margin: '20px 0' }}>
         <p><strong>📍 Lieu :</strong> {event.location}</p>
-        <p><strong>📅 Date :</strong> {new Date(event.starts_at).toLocaleDateString('fr-FR', {
+        <p><strong>📅 Date :</strong> {new Date(event.event_date).toLocaleDateString('fr-FR', {
           weekday: 'long',
           year: 'numeric',
           month: 'long',

@@ -44,7 +44,7 @@ export default function EventsManagement() {
     const { data } = await supabase
       .from('events')
       .select('*')
-      .order('starts_at', { ascending: false })
+      .order('event_date', { ascending: false })
 
     setEvents(data || [])
   }
@@ -87,11 +87,11 @@ export default function EventsManagement() {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                 <div>
-                  <h3 style={{ margin: '0 0 10px 0' }}>{event.title}</h3>
-                  {event.theme && <p style={{ color: '#666', margin: '0 0 10px 0' }}>{event.theme}</p>}
+                  <h3 style={{ margin: '0 0 10px 0' }}>{event.name}</h3>
+                  {event.description && <p style={{ color: '#666', margin: '0 0 10px 0' }}>{event.description}</p>}
                   <p style={{ margin: '5px 0' }}>
                     📍 {event.location}<br />
-                    📅 {new Date(event.starts_at).toLocaleDateString('fr-FR')}
+                    📅 {new Date(event.event_date).toLocaleDateString('fr-FR')}
                   </p>
                   <p style={{ 
                     display: 'inline-block',
