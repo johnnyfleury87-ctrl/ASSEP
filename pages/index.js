@@ -7,6 +7,7 @@ import EventCard from '../components/EventCard'
 import Button from '../components/Button'
 import Link from 'next/link'
 import { supabase } from '../lib/supabaseClient'
+import { supabaseAdmin } from '../lib/supabaseAdmin'
 import { HELP_SECTIONS } from '../lib/constants'
 
 export default function Home({ events, bureau, balance }) {
@@ -301,8 +302,8 @@ export async function getServerSideProps() {
       .eq('is_active', true)
       .order('display_order', { ascending: true })
 
-    // Calculer le solde de la trésorerie
-    const { data: transactions } = await supabase
+    // Calculer le solde de la trésorerie (avec supabaseAdmin pour bypasser RLS)
+    const { data: transactions } = await supabaseAdmin
       .from('transactions')
       .select('type, amount')
     
