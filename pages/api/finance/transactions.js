@@ -2,7 +2,6 @@
 // API pour la gestion des transactions financières (recettes/dépenses)
 
 import { supabaseAdmin } from '../../../lib/supabaseAdmin'
-import { createAnonClient } from '../../../lib/supabaseAnonServer'
 
 export default async function handler(req, res) {
   const { method } = req
@@ -17,11 +16,10 @@ export default async function handler(req, res) {
   }
 
   const token = authHeader.replace('Bearer ', '')
-  const anonClient = createAnonClient(token)
   
-  const { data: { user }, error: authError } = await anonClient.auth.getUser()
+  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
   if (authError || !user) {
-    console.error('Auth error:', authError)
+    console.error('❌ Auth error:', authError?.message || 'No user')
     return res.status(401).json({ error: 'Token invalide ou expiré.' })
   }
 
