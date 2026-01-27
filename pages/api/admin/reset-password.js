@@ -76,7 +76,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      message: 'Mot de passe réinitialisé à ASSEP1234!'
+      message: 'Mot de passe réinitialisé avec succès. Un email a été envoyé à l\'utilisateur.'
     });
 
   } catch (error) {

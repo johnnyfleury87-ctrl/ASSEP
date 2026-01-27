@@ -9,20 +9,36 @@ async function checkAdmin(req, res) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
 
   if (authError || !user) {
+    console.error('❌ Auth error:', authError?.message || 'No user')
     return { authorized: false, userId: null }
   }
 
-  const { data: profile } = await supabaseAdmin
+  const { data: profile, error: profileError } = await supabaseAdmin
     .from('profiles')
-    .select('role')
+    .select('role, is_jetc_admin')
     .eq('id', user.id)
     .single()
 
-  if (!profile || !['president', 'vice_president'].includes(profile.role)) {
+  if (profileError) {
+    console.error('❌ Profile error:', profileError.message)
     return { authorized: false, userId: user.id }
   }
 
-  return { authorized: true, userId: user.id }
+  if (!profile) {
+    console.error('❌ No profile found for user:', user.id)
+    return { authorized: false, userId: user.id }
+  }
+
+  console.log('✅ User profile:', { userId: user.id, role: profile.role, isJetcAdmin: profile.is_jetc_admin })
+
+  // Autoriser les présidents, vice-présidents ET JETC admins
+  const isAuthorized = profile.is_jetc_admin || ['president', 'vice_president'].includes(profile.role)
+  
+  if (!isAuthorized) {
+    console.error('❌ User not authorized. Role:', profile.role, 'isJetcAdmin:', profile.is_jetc_admin)
+  }
+
+  return { authorized: isAuthorized, userId: user.id }
 }
 
 export default async function handler(req, res) {
