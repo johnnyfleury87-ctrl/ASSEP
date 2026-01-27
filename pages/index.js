@@ -179,50 +179,86 @@ export default function Home({ events, bureau }) {
               gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
               gap: '24px'
             }}>
-              {bureau.map((member, index) => (
-                <div
-                  key={index}
-                  style={{
-                    backgroundColor: 'white',
-                    borderRadius: '12px',
-                    padding: '24px',
-                    textAlign: 'center',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                  }}
-                >
-                  <div style={{
-                    width: '80px',
-                    height: '80px',
-                    borderRadius: '50%',
-                    backgroundColor: '#4CAF50',
-                    margin: '0 auto 16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '32px',
-                    color: 'white',
-                    fontWeight: 'bold'
-                  }}>
-                    {member.first_name?.charAt(0) || '?'}
+              {bureau.map((member) => {
+                const roleLabels = {
+                  'president': 'Président',
+                  'vice_president': 'Vice-Président',
+                  'tresorier': 'Trésorier',
+                  'vice_tresorier': 'Vice-Trésorier',
+                  'secretaire': 'Secrétaire',
+                  'vice_secretaire': 'Vice-Secrétaire'
+                };
+                
+                return (
+                  <div
+                    key={member.id}
+                    style={{
+                      backgroundColor: 'white',
+                      borderRadius: '12px',
+                      padding: '24px',
+                      textAlign: 'center',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    }}
+                  >
+                    {member.photo_url ? (
+                      <img
+                        src={member.photo_url}
+                        alt={member.name}
+                        style={{
+                          width: '80px',
+                          height: '80px',
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                          margin: '0 auto 16px',
+                          display: 'block'
+                        }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '80px',
+                        height: '80px',
+                        borderRadius: '50%',
+                        backgroundColor: '#4CAF50',
+                        margin: '0 auto 16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '32px',
+                        color: 'white',
+                        fontWeight: 'bold'
+                      }}>
+                        {member.name?.charAt(0) || '?'}
+                      </div>
+                    )}
+                    <h3 style={{
+                      fontSize: '18px',
+                      fontWeight: 'bold',
+                      margin: '0 0 4px 0',
+                      color: '#333'
+                    }}>
+                      {member.name}
+                    </h3>
+                    <p style={{
+                      fontSize: '14px',
+                      color: '#4CAF50',
+                      fontWeight: '600',
+                      margin: member.bio ? '0 0 8px 0' : '0'
+                    }}>
+                      {roleLabels[member.role] || member.role}
+                    </p>
+                    {member.bio && (
+                      <p style={{
+                        fontSize: '13px',
+                        color: '#666',
+                        margin: 0,
+                        lineHeight: '1.4'
+                      }}>
+                        {member.bio}
+                      </p>
+                    )}
                   </div>
-                  <h3 style={{
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    margin: '0 0 4px 0',
-                    color: '#333'
-                  }}>
-                    {member.first_name} {member.last_name}
-                  </h3>
-                  <p style={{
-                    fontSize: '14px',
-                    color: '#4CAF50',
-                    fontWeight: '600',
-                    margin: 0
-                  }}>
-                    {member.role_label}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div style={{
@@ -258,10 +294,11 @@ export async function getServerSideProps() {
       .order('starts_at', { ascending: true })
       .limit(3)
 
-    // Récupérer les membres du bureau
+    // Récupérer les membres du bureau actifs
     const { data: bureau } = await supabase
       .from('bureau_members')
       .select('*')
+      .eq('is_active', true)
       .order('display_order', { ascending: true })
 
     return {

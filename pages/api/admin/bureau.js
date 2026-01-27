@@ -56,14 +56,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    // GET - Lire tous les membres du bureau
+    // GET - Lire tous les membres du bureau (public)
     if (req.method === 'GET') {
       const { data, error } = await supabaseAdmin
         .from('bureau_members')
         .select('*')
-        .order('sort_order', { ascending: true })
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
 
       if (error) {
+        console.error('❌ Failed to fetch bureau members:', error.message)
         return res.status(500).json({ error: 'Failed to fetch bureau members' })
       }
 
