@@ -53,21 +53,23 @@ export default async function handler(req, res) {
 
     // POST - Créer un membre du bureau
     if (req.method === 'POST') {
-      const { title, name, photoUrl, sortOrder, isVisible } = req.body
+      const { role, name, photoUrl, bio, email, phone, displayOrder, isActive } = req.body
 
-      if (!title) {
-        return res.status(400).json({ error: 'Missing title' })
+      if (!role || !name) {
+        return res.status(400).json({ error: 'Missing required fields: role and name' })
       }
 
       const { data, error } = await supabaseAdmin
         .from('bureau_members')
         .insert({
-          title,
-          name: name || null,
+          role,
+          name,
           photo_url: photoUrl || null,
-          sort_order: sortOrder || 100,
-          is_visible: isVisible !== false,
-          created_by: userId
+          bio: bio || null,
+          email: email || null,
+          phone: phone || null,
+          display_order: displayOrder || 0,
+          is_active: isActive !== false
         })
         .select()
         .single()
@@ -82,23 +84,26 @@ export default async function handler(req, res) {
 
     // PUT - Mettre à jour un membre du bureau
     if (req.method === 'PUT') {
-      const { id, title, name, photoUrl, sortOrder, isVisible } = req.body
+      const { id, role, name, photoUrl, bio, email, phone, displayOrder, isActive } = req.body
 
       if (!id) {
         return res.status(400).json({ error: 'Missing id' })
       }
 
+      const updateData = {}
+      if (role !== undefined) updateData.role = role
+      if (name !== undefined) updateData.name = name
+      if (photoUrl !== undefined) updateData.photo_url = photoUrl
+      if (bio !== undefined) updateData.bio = bio
+      if (email !== undefined) updateData.email = email
+      if (phone !== undefined) updateData.phone = phone
+      if (displayOrder !== undefined) updateData.display_order = displayOrder
+      if (isActive !== undefined) updateData.is_active = isActive
+      updateData.updated_at = new Date().toISOString()
+
       const { data, error } = await supabaseAdmin
         .from('bureau_members')
-        .update({
-          title: title || undefined,
-          name: name !== undefined ? name : undefined,
-          photo_url: photoUrl !== undefined ? photoUrl : undefined,
-          sort_order: sortOrder !== undefined ? sortOrder : undefined,
-          is_visible: isVisible !== undefined ? isVisible : undefined,
-          updated_by: userId,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single()

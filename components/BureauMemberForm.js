@@ -6,10 +6,13 @@ import Button from './Button'
 
 export default function BureauMemberForm({ member, onSubmit, onCancel }) {
   const [formData, setFormData] = useState({
-    title: '',
+    role: '',
     name: '',
+    bio: '',
     photo_url: '',
-    display_order: 100,
+    email: '',
+    phone: '',
+    display_order: 0,
     is_active: true
   })
 
@@ -20,10 +23,13 @@ export default function BureauMemberForm({ member, onSubmit, onCancel }) {
   useEffect(() => {
     if (member) {
       setFormData({
-        title: member.title || '',
+        role: member.role || '',
         name: member.name || '',
+        bio: member.bio || '',
         photo_url: member.photo_url || '',
-        display_order: member.display_order || 100,
+        email: member.email || '',
+        phone: member.phone || '',
+        display_order: member.display_order || 0,
         is_active: member.is_active !== false
       })
     }
@@ -44,8 +50,12 @@ export default function BureauMemberForm({ member, onSubmit, onCancel }) {
   const validate = () => {
     const newErrors = {}
     
-    if (!formData.title.trim()) {
-      newErrors.title = 'Le titre est requis'
+    if (!formData.role) {
+      newErrors.role = 'Le rôle est requis'
+    }
+    
+    if (!formData.name || !formData.name.trim()) {
+      newErrors.name = 'Le nom est requis'
     }
     
     if (formData.display_order < 0) {
@@ -69,10 +79,13 @@ export default function BureauMemberForm({ member, onSubmit, onCancel }) {
       // Réinitialiser le formulaire après création (mais pas en édition)
       if (!member) {
         setFormData({
-          title: '',
+          role: '',
           name: '',
+          bio: '',
           photo_url: '',
-          display_order: 100,
+          email: '',
+          phone: '',
+          display_order: 0,
           is_active: true
         })
       }
@@ -89,28 +102,34 @@ export default function BureauMemberForm({ member, onSubmit, onCancel }) {
         {member ? 'Modifier le membre du bureau' : 'Ajouter un membre du bureau'}
       </h3>
 
-      {/* Titre (fonction) */}
+      {/* Rôle */}
       <div style={styles.field}>
-        <label htmlFor="title" style={styles.label}>
-          Titre / Fonction <span style={styles.required}>*</span>
+        <label htmlFor="role" style={styles.label}>
+          Rôle <span style={styles.required}>*</span>
         </label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          value={formData.title}
+        <select
+          id="role"
+          name="role"
+          value={formData.role}
           onChange={handleChange}
-          placeholder="Ex: Président, Trésorière, Secrétaire..."
-          style={errors.title ? { ...styles.input, ...styles.inputError } : styles.input}
+          style={errors.role ? { ...styles.input, ...styles.inputError } : styles.input}
           disabled={loading}
-        />
-        {errors.title && <span style={styles.error}>{errors.title}</span>}
+        >
+          <option value="">-- Sélectionner un rôle --</option>
+          <option value="president">Président</option>
+          <option value="vice_president">Vice-Président</option>
+          <option value="tresorier">Trésorier</option>
+          <option value="vice_tresorier">Vice-Trésorier</option>
+          <option value="secretaire">Secrétaire</option>
+          <option value="vice_secretaire">Vice-Secrétaire</option>
+        </select>
+        {errors.role && <span style={styles.error}>{errors.role}</span>}
       </div>
 
       {/* Nom */}
       <div style={styles.field}>
         <label htmlFor="name" style={styles.label}>
-          Nom complet (optionnel)
+          Nom complet <span style={styles.required}>*</span>
         </label>
         <input
           type="text"
@@ -119,11 +138,69 @@ export default function BureauMemberForm({ member, onSubmit, onCancel }) {
           value={formData.name}
           onChange={handleChange}
           placeholder="Jean Dupont"
+          style={errors.name ? { ...styles.input, ...styles.inputError } : styles.input}
+          disabled={loading}
+        />
+        {errors.name && <span style={styles.error}>{errors.name}</span>}
+      </div>
+
+      {/* Bio */}
+      <div style={styles.field}>
+        <label htmlFor="bio" style={styles.label}>
+          Biographie (optionnel)
+        </label>
+        <textarea
+          id="bio"
+          name="bio"
+          value={formData.bio}
+          onChange={handleChange}
+          placeholder="Courte présentation..."
+          rows="4"
           style={styles.input}
           disabled={loading}
         />
         <small style={styles.hint}>
-          Si vide, seul le titre sera affiché sur le site public
+          Texte affiché sous le nom sur le site public
+        </small>
+      </div>
+
+      {/* Email */}
+      <div style={styles.field}>
+        <label htmlFor="email" style={styles.label}>
+          Email (optionnel)
+        </label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="email@example.com"
+          style={styles.input}
+          disabled={loading}
+        />
+        <small style={styles.hint}>
+          Email de contact public
+        </small>
+      </div>
+
+      {/* Téléphone */}
+      <div style={styles.field}>
+        <label htmlFor="phone" style={styles.label}>
+          Téléphone (optionnel)
+        </label>
+        <input
+          type="tel"
+          id="phone"
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          placeholder="+33 6 12 34 56 78"
+          style={styles.input}
+          disabled={loading}
+        />
+        <small style={styles.hint}>
+          Téléphone de contact public
         </small>
       </div>
 

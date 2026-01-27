@@ -76,16 +76,20 @@ export default function BureauManagement() {
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          title: formData.title,
-          name: formData.name || null,
+          role: formData.role,
+          name: formData.name,
+          bio: formData.bio || null,
           photoUrl: formData.photo_url || null,
-          sortOrder: parseInt(formData.display_order),
-          isVisible: formData.is_active
+          email: formData.email || null,
+          phone: formData.phone || null,
+          displayOrder: parseInt(formData.display_order),
+          isActive: formData.is_active
         })
       })
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la création')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erreur lors de la création')
       }
 
       setMessage('Membre ajouté avec succès')
@@ -116,16 +120,20 @@ export default function BureauManagement() {
         },
         body: JSON.stringify({
           id: editingMember.id,
-          title: formData.title,
-          name: formData.name || null,
+          role: formData.role,
+          name: formData.name,
+          bio: formData.bio || null,
           photoUrl: formData.photo_url || null,
-          sortOrder: parseInt(formData.display_order),
-          isVisible: formData.is_active
+          email: formData.email || null,
+          phone: formData.phone || null,
+          displayOrder: parseInt(formData.display_order),
+          isActive: formData.is_active
         })
       })
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la mise à jour')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erreur lors de la mise à jour')
       }
 
       setMessage('Membre mis à jour avec succès')
