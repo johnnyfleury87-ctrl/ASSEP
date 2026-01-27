@@ -53,7 +53,7 @@ export default async function handler(req, res) {
         .from('transactions')
         .select(`
           *,
-          events:event_id(id, title),
+          events:event_id(id, name),
           profiles:recorded_by(id, first_name, last_name, email)
         `)
         .order('transaction_date', { ascending: false })

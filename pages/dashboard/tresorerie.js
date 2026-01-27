@@ -205,7 +205,7 @@ export default function Tresorerie() {
       t.category,
       t.description,
       t.amount.toFixed(2),
-      t.events?.title || ''
+      t.events?.name || ''
     ])
 
     const csvContent = [
@@ -350,7 +350,7 @@ export default function Tresorerie() {
                       <td style={{ padding: '12px' }}>{transaction.category}</td>
                       <td style={{ padding: '12px' }}>{transaction.description}</td>
                       <td style={{ padding: '12px', fontSize: '14px', color: '#666' }}>
-                        {transaction.events?.title || '-'}
+                        {transaction.events?.name || '-'}
                       </td>
                       <td style={{ 
                         padding: '12px', 
