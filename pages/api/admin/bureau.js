@@ -5,8 +5,17 @@ import { supabaseAdmin } from '../../../lib/supabaseServer'
 import { createServerSupabaseClient } from '../../../lib/supabaseServer'
 
 async function checkAdmin(req, res) {
-  const supabase = createServerSupabaseClient({ req, res })
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  // Récupérer le token depuis l'Authorization header
+  const authHeader = req.headers.authorization
+  if (!authHeader) {
+    console.error('❌ No authorization header')
+    return { authorized: false, userId: null }
+  }
+
+  const token = authHeader.replace('Bearer ', '')
+  
+  // Utiliser supabaseAdmin pour vérifier le token
+  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
 
   if (authError || !user) {
     console.error('❌ Auth error:', authError?.message || 'No user')
