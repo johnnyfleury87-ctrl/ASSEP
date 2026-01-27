@@ -84,15 +84,29 @@ export default function EventPhotos() {
     if (photosError) {
       console.error('Error loading photos:', photosError)
     } else {
-      setPhotos(photosData || [])
+      // Générer URLs signées pour chaque photo
+      if (photosData && photosData.length > 0) {
+        const photosWithUrls = await Promise.all(
+          photosData.map(async (photo) => {
+            const { data: urlData } = await supabase.storage
+              .from('event-photos')
+              .createSignedUrl(photo.storage_path, 3600) // 1 heure
+            
+            return {
+              ...photo,
+              url: urlData?.signedUrl || null
+            }
+          })
+        )
+        setPhotos(photosWithUrls)
+      } else {
+        setPhotos([])
+      }
     }
   }
 
-  const getPhotoUrl = (storagePath) => {
-    const { data } = supabase.storage
-      .from('event-photos')
-      .getPublicUrl(storagePath)
-    return data.publicUrl
+  const getPhotoUrl = (photo) => {
+    return photo.url || '/placeholder.jpg'
   }
 
   const handleFileUpload = async (e) => {
@@ -442,12 +456,15 @@ export default function EventPhotos() {
               )}
               
               <img
-                src={getPhotoUrl(photo.storage_path)}
+                src={getPhotoUrl(photo)}
                 alt={photo.caption || 'Photo événement'}
                 style={{
                   width: '100%',
                   height: '200px',
                   objectFit: 'cover'
+                }}
+                onError={(e) => {
+                  e.target.src = '/placeholder.jpg'
                 }}
               />
               

@@ -56,7 +56,6 @@ if (!SERVICE_KEY) {
 
 console.log('✅ Variables d environnement OK')
 console.log('   SUPABASE_URL:', SUPABASE_URL)
-console.log('   SERVICE_KEY: eyJh...', SERVICE_KEY.substring(4, 20), '...')
 console.log('')
 
 // Fonction pour faire une requête HTTPS
