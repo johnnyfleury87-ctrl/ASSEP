@@ -22,9 +22,9 @@
 | Authentification | ✅ | ✅ | ✅ | ✅ | 🟢 Opérationnel |
 | Profils utilisateurs | ✅ | ✅ | ✅ | ✅ | 🟢 Opérationnel |
 | Rôles (JETC/Bureau) | ✅ | ✅ | ✅ | ✅ | 🟢 Opérationnel |
-| Gestion du bureau | ✅ | ✅ | ✅ | ❌ | 🟡 API OK, UI manquante |
+| Gestion du bureau | ✅ | ✅ | ✅ | ✅ | 🟢 Opérationnel |
 | Événements | ✅ | ✅ | ⚠️ | ⚠️ | 🟡 Partiel |
-| Communications | ✅ | ✅ | ⚠️ | ❌ | 🔴 Incomplet + failles sécurité |
+| Communications | ✅ | ✅ | ✅ | ✅ | 🟢 Opérationnel |
 | Trésorerie | ✅ | ✅ | ❌ | 🟡 | 🟡 Lecture seule |
 | Inscriptions bénévoles | ✅ | ✅ | ⚠️ | ⚠️ | 🟡 Partiel |
 | Dons | ✅ | ✅ | ❌ | ❌ | 🔴 Non implémenté |
@@ -111,18 +111,18 @@
 ✅ `/api/admin/reset-password` - Reset mot de passe  
 ✅ `/api/admin/whoami` - Info user connecté  
 ✅ `/api/admin/users/create` (POST) - Création utilisateur  
+✅ `/api/campaigns/send` (POST) - Envoi campagne (SÉCURISÉ)  
+✅ `/api/campaigns/create` (POST) - Création campagne  
 
 ### APIs partielles ou problématiques
 
-⚠️ `/api/campaigns/send` (POST) - **Pas d'auth !** 🚨  
 ⚠️ `/api/signups` - État inconnu (à vérifier)  
 ⚠️ `/api/events/approve` - État inconnu (à vérifier)  
 ⚠️ `/api/events/reject` - État inconnu (à vérifier)  
 
 ### APIs complètement absentes
 
-❌ `/api/campaigns/create` - Création campagne email  
-❌ `/api/campaigns/list` - Liste campagnes  
+❌ `/api/campaigns/list` - Liste campagnes (optionnel, lecture directe Supabase OK)  
 ❌ `/api/finance/transactions` - CRUD transactions trésorerie  
 ❌ `/api/finance/balance` - Calcul solde  
 ❌ `/api/donations/*` - Gestion dons  
@@ -141,10 +141,10 @@
 
 | Page | État UI | APIs utilisées | État |
 |------|---------|----------------|------|
-| `/dashboard/bureau` | 🟡 Liste affichée, CRUD manquant | `/api/admin/bureau` | 🟡 Partiel |
+| `/dashboard/bureau` | ✅ CRUD complet | `/api/admin/bureau` | 🟢 OK |
 | `/dashboard/admin/roles` | ✅ Complète | `/api/admin/roles`, `/api/admin/users` | 🟢 OK |
 | `/dashboard/jetc/users` | ✅ Complète | `/api/admin/users/create` | 🟢 OK |
-| `/dashboard/communications` | 🔴 Liste affichée, formulaire manquant | Lecture directe Supabase | 🔴 Incomplet |
+| `/dashboard/communications` | ✅ CRUD complet | `/api/campaigns/create`, `/api/campaigns/send` | 🟢 OK |
 | `/dashboard/tresorerie` | 🟡 Lecture seule + export CSV | Lecture directe Supabase | 🟡 Partiel |
 
 ### Pages événements
@@ -170,16 +170,17 @@
 
 ## 🚨 Problèmes critiques identifiés
 
-### 🔴 Sécurité
+### 🟢 Sécurité - CORRIGÉE
 
-1. **`/api/campaigns/send` sans authentification**
-   - N'importe qui peut envoyer une campagne s'il connaît l'ID
-   - **Impact:** Spam possible, RGPD compromis
-   - **Fix:** Ajouter vérification Bearer token + rôle
+1. **`/api/campaigns/send` sans authentification** ✅ RÉSOLU
+   - Authentification Bearer token ajoutée
+   - Vérification de rôle implémentée
+   - Logs d'audit ajoutés
 
-2. **RLS policy `email_campaigns` trop restrictive**
-   - Secrétaires/Vice-secrétaires bloqués (alors qu'ils devraient avoir accès)
-   - **Fix:** Modifier policy pour inclure secrétaires
+2. **RLS policy `email_campaigns` trop restrictive** ✅ RÉSOLU
+   - Migration 0010 créée
+   - Policy mise à jour pour inclure secrétaires
+   - ⚠️ **Action requise:** Exécuter la migration dans Supabase
 
 ### 🔴 Incohérences majeures
 
@@ -200,21 +201,16 @@
 
 ### 🟡 Fonctionnalités incomplètes
 
-1. **Gestion du bureau** (UI manquante)
-   - API complète et fonctionnelle
-   - Aucun formulaire CRUD dans l'UI
-   - Page affiche uniquement bandeau "à implémenter"
-
-2. **Communications** (UI + API manquantes)
-   - Pas d'API de création de campagne
-   - Pas de formulaire dans l'UI
-   - Envoi possible mais dangereux (pas d'auth)
-
-3. **Trésorerie** (écriture manquante)
+1. **Trésorerie** (écriture manquante)
    - Lecture et export CSV OK
    - Aucune API pour créer/modifier/supprimer
    - Aucun formulaire de saisie
    - **Impact:** Trésoriers doivent saisir en SQL direct !
+
+2. **Tables manquantes vs README**
+   - `email_logs` mentionnée mais absente
+   - `event_buvette_items`, `event_payment_methods`, `event_cashups` absentes
+   - **Impact:** Fonctionnalités buvette non implémentables sans migration
 
 ---
 
