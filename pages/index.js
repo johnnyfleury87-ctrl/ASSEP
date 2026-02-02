@@ -7,7 +7,6 @@ import EventCard from '../components/EventCard'
 import Button from '../components/Button'
 import Link from 'next/link'
 import { supabase } from '../lib/supabaseClient'
-import { supabaseAdmin } from '../lib/supabaseAdmin'
 import { HELP_SECTIONS } from '../lib/constants'
 import safeLog from '../lib/logger'
 
