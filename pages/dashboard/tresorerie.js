@@ -14,10 +14,16 @@ export default function Tresorerie() {
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState([])
   const [balance, setBalance] = useState(0)
+  const [startingBalance, setStartingBalance] = useState(0)
+  const [startingBalanceDate, setStartingBalanceDate] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState(null)
   const [message, setMessage] = useState(null)
   const [error, setError] = useState(null)
+  const [showStartingBalanceModal, setShowStartingBalanceModal] = useState(false)
+  const [tempStartingBalance, setTempStartingBalance] = useState('')
+  const [tempStartingBalanceDate, setTempStartingBalanceDate] = useState('')
+  const [userRole, setUserRole] = useState(null)
 
   useEffect(() => {
     checkAuthAndLoad()
@@ -42,7 +48,9 @@ export default function Tresorerie() {
       return
     }
 
+    setUserRole(profileData.role)
     loadTransactions()
+    loadStartingBalance()
   }
 
   const loadTransactions = async () => {
@@ -72,6 +80,8 @@ export default function Tresorerie() {
       const data = await response.json()
       safeLog.debug('✅ Transactions chargées:', data)
       setTransactions(data.transactions || [])
+      // Le balance de l'API est maintenant la somme des transactions uniquement
+      // On calculera le solde total avec startingBalance + balance
       setBalance(data.balance || 0)
     } catch (err) {
       safeLog.error('❌ Load error:', err)
@@ -79,6 +89,81 @@ export default function Tresorerie() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const loadStartingBalance = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const response = await fetch('/api/finance/starting-balance', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setStartingBalance(data.starting_balance || 0)
+        setStartingBalanceDate(data.starting_balance_date)
+      }
+    } catch (err) {
+      safeLog.error('❌ Load starting balance error:', err)
+      // Ne pas afficher d'erreur si le solde de départ n'est pas encore défini
+    }
+  }
+
+  const handleUpdateStartingBalance = async () => {
+    setError(null)
+    setMessage(null)
+
+    const newBalance = parseFloat(tempStartingBalance)
+    if (isNaN(newBalance)) {
+      setError('Veuillez saisir un montant valide')
+      return
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('Session expirée')
+      }
+
+      const response = await fetch('/api/finance/starting-balance', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          starting_balance: newBalance,
+          starting_balance_date: tempStartingBalanceDate || null
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors de la mise à jour')
+      }
+
+      setMessage('Solde de départ mis à jour avec succès !')
+      setShowStartingBalanceModal(false)
+      setTempStartingBalance('')
+      setTempStartingBalanceDate('')
+      loadStartingBalance()
+    } catch (err) {
+      safeLog.error('❌ handleUpdateStartingBalance error:', err)
+      setError(err.message || 'Erreur lors de la mise à jour du solde de départ')
+    }
+  }
+
+  const openStartingBalanceModal = () => {
+    setTempStartingBalance(startingBalance.toString())
+    setTempStartingBalanceDate(startingBalanceDate || '')
+    setShowStartingBalanceModal(true)
+    setError(null)
+    setMessage(null)
   }
 
   const handleCreate = async (formData) => {
@@ -252,6 +337,12 @@ export default function Tresorerie() {
     return <div style={{ padding: '20px' }}>Chargement...</div>
   }
 
+  // Calculer le solde total : solde de départ + somme des transactions
+  const totalBalance = startingBalance + balance
+
+  // Vérifier si l'utilisateur peut gérer le solde de départ
+  const canManageStartingBalance = ['tresorier', 'vice_tresorier', 'president', 'vice_president'].includes(userRole)
+
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
       <header style={{ marginBottom: '40px' }}>
@@ -298,20 +389,52 @@ export default function Tresorerie() {
       )}
 
       {/* Solde */}
-      {!showForm && (
+      {!showForm && !showStartingBalanceModal && (
         <>
           <div style={{ 
             padding: '30px',
             backgroundColor: '#e8f5e9',
             borderRadius: '8px',
-            marginBottom: '40px',
+            marginBottom: '20px',
             textAlign: 'center'
           }}>
             <p style={{ fontSize: '18px', margin: '0 0 10px 0' }}>Solde actuel</p>
-            <p style={{ fontSize: '48px', fontWeight: 'bold', color: balance >= 0 ? '#4CAF50' : '#f44336', margin: 0 }}>
-              {balance.toFixed(2)} €
+            <p style={{ fontSize: '48px', fontWeight: 'bold', color: totalBalance >= 0 ? '#4CAF50' : '#f44336', margin: 0 }}>
+              {totalBalance.toFixed(2)} €
             </p>
+            <div style={{ marginTop: '15px', fontSize: '14px', color: '#666' }}>
+              <p style={{ margin: '5px 0' }}>
+                Solde de départ : <strong>{startingBalance.toFixed(2)} €</strong>
+                {startingBalanceDate && (
+                  <span style={{ marginLeft: '10px', fontSize: '12px' }}>
+                    (au {new Date(startingBalanceDate).toLocaleDateString('fr-FR')})
+                  </span>
+                )}
+              </p>
+              <p style={{ margin: '5px 0' }}>
+                Total des transactions : <strong>{balance.toFixed(2)} €</strong>
+              </p>
+            </div>
           </div>
+
+          {canManageStartingBalance && (
+            <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+              <button
+                onClick={openStartingBalanceModal}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#FF9800',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                ✏️ Définir solde de départ
+              </button>
+            </div>
+          )}
 
           {/* Actions */}
           <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
@@ -427,6 +550,126 @@ export default function Tresorerie() {
             </div>
           )}
         </>
+      )}
+
+      {/* Modal Solde de départ */}
+      {showStartingBalanceModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}>
+            <h2 style={{ marginTop: 0 }}>Définir le solde de départ</h2>
+            
+            <p style={{ color: '#666', fontSize: '14px' }}>
+              Le solde actuel sera calculé comme : <strong>Solde de départ + Total des transactions</strong>
+            </p>
+
+            {error && (
+              <div style={{
+                backgroundColor: '#f8d7da',
+                color: '#721c24',
+                padding: '12px',
+                borderRadius: '4px',
+                marginBottom: '15px',
+                border: '1px solid #f5c6cb'
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                Montant du solde de départ (€) *
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                value={tempStartingBalance}
+                onChange={(e) => setTempStartingBalance(e.target.value)}
+                placeholder="Ex: 10000.00"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                Date du solde de départ (optionnel)
+              </label>
+              <input
+                type="date"
+                value={tempStartingBalanceDate}
+                onChange={(e) => setTempStartingBalanceDate(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setShowStartingBalanceModal(false)
+                  setError(null)
+                  setTempStartingBalance('')
+                  setTempStartingBalanceDate('')
+                }}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#ccc',
+                  color: '#333',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '16px'
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleUpdateStartingBalance}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '16px'
+                }}
+              >
+                Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

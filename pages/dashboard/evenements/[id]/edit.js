@@ -23,7 +23,8 @@ export default function EditEvent() {
     event_date: '',
     status: 'draft',
     buvette_active: false,
-    signups_enabled: false
+    signups_enabled: false,
+    volunteer_target: 0
   })
 
   useEffect(() => {
@@ -81,7 +82,8 @@ export default function EditEvent() {
         event_date: formattedDate,
         status: eventData.status || 'draft',
         buvette_active: eventData.buvette_active || false,
-        signups_enabled: eventData.signups_enabled || false
+        signups_enabled: eventData.signups_enabled || false,
+        volunteer_target: eventData.volunteer_target || 0
       })
 
       setLoading(false)
@@ -128,7 +130,8 @@ export default function EditEvent() {
           location: formData.location,
           event_date: formData.event_date,
           buvette_active: formData.buvette_active,
-          signups_enabled: formData.signups_enabled
+          signups_enabled: formData.signups_enabled,
+          volunteer_target: parseInt(formData.volunteer_target) || 0
         })
         .eq('id', id)
 
@@ -399,9 +402,26 @@ export default function EditEvent() {
               <span style={{ fontWeight: 'bold' }}>📝 Activer les inscriptions publiques</span>
             </label>
             <p style={{ fontSize: '12px', color: '#666', margin: '5px 0 0 30px' }}>
-              Permet aux participants de s'inscrire via le site
+              Permet au public de s'inscrire aux créneaux bénévoles
             </p>
           </div>
+        </div>
+
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+            👥 Nombre de bénévoles recherchés
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="100"
+            value={formData.volunteer_target}
+            onChange={(e) => setFormData({ ...formData, volunteer_target: e.target.value })}
+            style={{ width: '150px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
+          />
+          <p style={{ fontSize: '12px', color: '#666', margin: '5px 0 0 0' }}>
+            Mettre 0 pour désactiver l'inscription bénévole simplifiée. Les visiteurs verront un compteur "X/Y" sur la page de l'événement.
+          </p>
         </div>
 
         <button
