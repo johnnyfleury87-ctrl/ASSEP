@@ -16,7 +16,7 @@ export default function Hero({ balance }) {
         setCurrentImageIndex((prev) => (prev + 1) % HERO_IMAGES.length)
         setIsTransitioning(false)
       }, 500)
-    }, 5000) // ⚙️ VITESSE DÉFILEMENT : 5000 = 5s | 3000 = 3s | 7000 = 7s
+    }, 2000) // ⚙️ VITESSE DÉFILEMENT : 5000 = 5s | 3000 = 3s | 7000 = 7s
 
     return () => clearInterval(interval)
   }, [])
