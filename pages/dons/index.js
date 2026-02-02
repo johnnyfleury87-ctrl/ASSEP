@@ -22,6 +22,27 @@ export default function DonsGeneraux({ donationCounter }) {
 
   return (
     <Layout>
+      {/* Bandeau Page en construction */}
+      <div style={{
+        backgroundColor: '#fff3cd',
+        borderBottom: '3px solid #ffc107',
+        padding: '20px',
+        textAlign: 'center',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      }}>
+        <p style={{ 
+          margin: 0, 
+          fontSize: '18px', 
+          fontWeight: 'bold', 
+          color: '#856404' 
+        }}>
+          🚧 Page en construction 🚧
+        </p>
+      </div>
+
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px', textAlign: 'center' }}>
         <h1>💝 Faire un don à l&apos;ASSEP</h1>
         <p style={{ fontSize: '18px', marginBottom: '40px' }}>
