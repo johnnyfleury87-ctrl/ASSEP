@@ -69,6 +69,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
               style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
             />
           </div>
@@ -82,6 +83,7 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="current-password"
               style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }}
             />
           </div>

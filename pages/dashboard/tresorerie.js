@@ -100,16 +100,25 @@ export default function Tresorerie() {
         body: JSON.stringify(formData)
       })
 
+      // Vérifier le content-type avant de parser le JSON
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        safeLog.error('Réponse non-JSON reçue:', response.status, contentType)
+        throw new Error('Erreur serveur : réponse invalide')
+      }
+
+      const data = await response.json()
+
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Erreur lors de la création')
+        throw new Error(data.error || 'Erreur lors de la création')
       }
 
       setMessage('Transaction créée avec succès !')
       setShowForm(false)
       loadTransactions()
     } catch (err) {
-      setError(err.message)
+      safeLog.error('❌ handleCreate error:', err)
+      setError(err.message || 'Erreur lors de la création')
       throw err
     }
   }
@@ -133,9 +142,17 @@ export default function Tresorerie() {
         body: JSON.stringify(formData)
       })
 
+      // Vérifier le content-type avant de parser le JSON
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        safeLog.error('Réponse non-JSON reçue:', response.status, contentType)
+        throw new Error('Erreur serveur : réponse invalide')
+      }
+
+      const data = await response.json()
+
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Erreur lors de la modification')
+        throw new Error(data.error || 'Erreur lors de la modification')
       }
 
       setMessage('Transaction modifiée avec succès !')
@@ -143,7 +160,8 @@ export default function Tresorerie() {
       setEditingTransaction(null)
       loadTransactions()
     } catch (err) {
-      setError(err.message)
+      safeLog.error('❌ handleUpdate error:', err)
+      setError(err.message || 'Erreur lors de la modification')
       throw err
     }
   }
@@ -171,15 +189,24 @@ export default function Tresorerie() {
         body: JSON.stringify({ id: transactionId })
       })
 
+      // Vérifier le content-type avant de parser le JSON
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        safeLog.error('Réponse non-JSON reçue:', response.status, contentType)
+        throw new Error('Erreur serveur : réponse invalide')
+      }
+
+      const data = await response.json()
+
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Erreur lors de la suppression')
+        throw new Error(data.error || 'Erreur lors de la suppression')
       }
 
       setMessage('Transaction supprimée avec succès !')
       loadTransactions()
     } catch (err) {
-      setError(err.message)
+      safeLog.error('❌ handleDelete error:', err)
+      setError(err.message || 'Erreur lors de la suppression')
     }
   }
 

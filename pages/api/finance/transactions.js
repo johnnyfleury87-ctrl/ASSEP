@@ -2,6 +2,7 @@
 // API pour la gestion des transactions financières (recettes/dépenses)
 
 import { supabaseAdmin } from '../../../lib/supabaseAdmin'
+import safeLog from '../../../lib/logger'
 
 export default async function handler(req, res) {
   const { method } = req
