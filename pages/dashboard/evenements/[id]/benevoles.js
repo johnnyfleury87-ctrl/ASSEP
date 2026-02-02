@@ -40,30 +40,28 @@ export default function EventVolunteers() {
 
     setEvent(eventData)
 
-    // Récupérer les bénévoles avec jointure sur profiles
-    const { data: signups } = await supabase
-      .from('event_volunteers')
-      .select(`
-        *,
-        profiles (
-          first_name,
-          last_name,
-          email,
-          phone
-        ),
-        event_shifts (
-          starts_at,
-          ends_at,
-          event_tasks (
-            label
-          )
-        )
-      `)
-      .eq('event_id', id)
-      .eq('status', 'confirmed')
-      .order('created_at', { ascending: false })
-
-    setVolunteers(signups || [])
+    // Récupérer les bénévoles via API (contourne les RLS profiles)
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token
+      
+      const response = await fetch(`/api/events/${id}/volunteers`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setVolunteers(data.volunteers || [])
+      } else {
+        console.error('Error fetching volunteers:', await response.text())
+        setVolunteers([])
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      setVolunteers([])
+    }
+    
     setLoading(false)
   }
 
@@ -153,16 +151,8 @@ export default function EventVolunteers() {
                   <td style={{ padding: '12px' }}>{volunteer.profiles?.last_name || '-'}</td>
                   <td style={{ padding: '12px' }}>{volunteer.profiles?.email || '-'}</td>
                   <td style={{ padding: '12px' }}>{volunteer.profiles?.phone || '-'}</td>
-                  <td style={{ padding: '12px' }}>{volunteer.event_shifts?.event_tasks?.label || '-'}</td>
-                  <td style={{ padding: '12px', fontSize: '14px' }}>
-                    {volunteer.event_shifts ? (
-                      <>
-                        {new Date(volunteer.event_shifts.starts_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                        {' - '}
-                        {new Date(volunteer.event_shifts.ends_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                      </>
-                    ) : '-'}
-                  </td>
+                  <td style={{ padding: '12px' }}>-</td>
+                  <td style={{ padding: '12px', fontSize: '14px' }}>-</td>
                   <td style={{ padding: '12px' }}>
                     <span style={{ 
                       padding: '4px 8px',
