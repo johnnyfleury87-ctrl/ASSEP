@@ -190,6 +190,21 @@ export default function EventsManagement() {
                   }}>
                     💰 Caisse
                   </Link>
+                  <button 
+                    onClick={() => handleDeleteEvent(event.id, event.name)}
+                    style={{ 
+                      padding: '8px 16px',
+                      backgroundColor: '#f44336',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      textAlign: 'center'
+                    }}
+                  >
+                    🗑️ Supprimer
+                  </button>
                 </div>
               </div>
             </div>
@@ -198,4 +213,27 @@ export default function EventsManagement() {
       )}
     </div>
   )
+}
+
+async function handleDeleteEvent(eventId, eventName) {
+  if (!confirm(`⚠️ Êtes-vous sûr de vouloir supprimer l'événement "${eventName}" ?\n\nCette action est irréversible et supprimera :\n- L'événement\n- Toutes les inscriptions bénévoles\n- Tous les produits de la buvette\n- Toutes les photos\n- Toutes les transactions associées`)) {
+    return
+  }
+
+  try {
+    const { error } = await supabase
+      .from('events')
+      .delete()
+      .eq('id', eventId)
+
+    if (error) {
+      alert(`❌ Erreur lors de la suppression : ${error.message}`)
+      return
+    }
+
+    alert('✅ Événement supprimé avec succès')
+    window.location.reload()
+  } catch (err) {
+    alert(`❌ Erreur : ${err.message}`)
+  }
 }
