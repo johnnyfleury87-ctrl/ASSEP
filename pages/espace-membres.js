@@ -78,13 +78,13 @@ export default function EspaceMembres() {
     try {
       // Validation
       if (!formData.email || !formData.password || !formData.firstName || !formData.lastName || !formData.phone) {
-        setError('Merci de compléter tous les champs obligatoires.')
+        setError('Tous les champs sont obligatoires')
         setFormLoading(false)
         return
       }
 
       if (!formData.gdprConsent) {
-        setError('Vous devez accepter les conditions de protection des données personnelles.')
+        setError('Vous devez accepter les conditions de protection des données personnelles')
         setFormLoading(false)
         return
       }
@@ -106,17 +106,12 @@ export default function EspaceMembres() {
       const data = await response.json()
 
       if (!response.ok) {
-        // Message spécifique pour email déjà utilisé
-        if (data.error && data.error.includes('déjà utilisé')) {
-          setError('⚠️ Un compte existe déjà avec cet email.')
-        } else {
-          setError(data.error || 'Erreur lors de l\'inscription')
-        }
+        setError(data.error || 'Erreur lors de l\'inscription')
         setFormLoading(false)
         return
       }
 
-      setMessage('✅ Compte créé avec succès. Bienvenue !')
+      setMessage('✅ Inscription réussie ! Vous allez être redirigé...')
       
       // Connexion automatique
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -255,22 +250,19 @@ export default function EspaceMembres() {
         <div style={{
           display: 'flex',
           justifyContent: 'center',
-          gap: '15px',
-          marginBottom: '30px',
-          flexWrap: 'wrap'
+          gap: '20px',
+          marginBottom: '30px'
         }}>
           <button
             onClick={() => setShowSignup(false)}
             style={{
-              padding: '12px 30px',
-              backgroundColor: !showSignup ? '#2196F3' : 'transparent',
-              color: !showSignup ? 'white' : '#2196F3',
-              border: `2px solid #2196F3`,
+              padding: '10px 20px',
+              backgroundColor: !showSignup ? '#2196F3' : '#e0e0e0',
+              color: !showSignup ? 'white' : '#666',
+              border: 'none',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontWeight: 'bold',
-              fontSize: '16px',
-              transition: 'all 0.3s ease'
+              fontWeight: 'bold'
             }}
           >
             Connexion
@@ -278,18 +270,16 @@ export default function EspaceMembres() {
           <button
             onClick={() => setShowSignup(true)}
             style={{
-              padding: '12px 30px',
-              backgroundColor: showSignup ? '#4CAF50' : 'transparent',
-              color: showSignup ? 'white' : '#4CAF50',
-              border: `2px solid #4CAF50`,
+              padding: '10px 20px',
+              backgroundColor: showSignup ? '#2196F3' : '#e0e0e0',
+              color: showSignup ? 'white' : '#666',
+              border: 'none',
               borderRadius: '8px',
               cursor: 'pointer',
-              fontWeight: 'bold',
-              fontSize: '16px',
-              transition: 'all 0.3s ease'
+              fontWeight: 'bold'
             }}
           >
-            S'inscrire
+            Devenir membre
           </button>
         </div>
 
@@ -349,32 +339,6 @@ export default function EspaceMembres() {
             >
               {formLoading ? 'Connexion...' : 'Se connecter'}
             </Button>
-
-            <div style={{
-              marginTop: '20px',
-              textAlign: 'center',
-              padding: '15px',
-              borderTop: '1px solid #e0e0e0'
-            }}>
-              <p style={{ margin: '0 0 10px 0', color: '#666' }}>
-                Vous n'avez pas de compte ?
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowSignup(true)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#4CAF50',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  cursor: 'pointer',
-                  textDecoration: 'underline'
-                }}
-              >
-                Créer un compte / S'inscrire
-              </button>
-            </div>
           </form>
         )}
 
@@ -545,32 +509,6 @@ export default function EspaceMembres() {
             >
               {formLoading ? 'Inscription...' : 'Créer mon compte membre'}
             </Button>
-
-            <div style={{
-              marginTop: '20px',
-              textAlign: 'center',
-              padding: '15px',
-              borderTop: '1px solid #e0e0e0'
-            }}>
-              <p style={{ margin: '0 0 10px 0', color: '#666' }}>
-                Vous avez déjà un compte ?
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowSignup(false)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#2196F3',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  cursor: 'pointer',
-                  textDecoration: 'underline'
-                }}
-              >
-                Se connecter
-              </button>
-            </div>
           </form>
         )}
 

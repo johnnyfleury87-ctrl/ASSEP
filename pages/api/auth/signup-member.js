@@ -1,7 +1,7 @@
 // pages/api/auth/signup-member.js
 // API pour inscription d'un nouveau membre avec consentement RGPD
 
-import { supabaseAdmin } from '../../../lib/supabaseAdmin'
+import { supabase } from '../../../lib/supabaseAdmin'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     }
 
     // Créer l'utilisateur dans auth.users
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
       email_confirm: true, // Auto-confirmer l'email (pas de vérification par email)
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
     }
 
     // Créer le profil (normalement créé par trigger, mais on s'assure)
-    const { error: profileError } = await supabaseAdmin
+    const { error: profileError } = await supabase
       .from('profiles')
       .upsert({
         id: authData.user.id,
@@ -66,7 +66,7 @@ export default async function handler(req, res) {
     if (profileError) {
       console.error('Profile error:', profileError)
       // Essayer de supprimer l'utilisateur créé
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
+      await supabase.auth.admin.deleteUser(authData.user.id)
       return res.status(500).json({ error: 'Erreur lors de la création du profil' })
     }
 
