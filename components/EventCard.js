@@ -69,6 +69,24 @@ export default function EventCard({ event }) {
         gap: '16px',
         flex: 1
       }}>
+        {/* Badge "Bénévoles recherchés" si applicable */}
+        {event.volunteer_quota > 0 && event.volunteer_count < event.volunteer_quota && (
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            backgroundColor: '#fef3c7',
+            color: '#92400e',
+            borderRadius: '20px',
+            fontSize: '13px',
+            fontWeight: '600',
+            alignSelf: 'flex-start',
+            animation: 'pulse 2s infinite'
+          }}>
+            🙋 Bénévoles recherchés
+          </div>
+        )}
         {/* Titre */}
         <h3 style={{
           fontSize: '20px',
@@ -95,6 +113,19 @@ export default function EventCard({ event }) {
             {event.description}
           </p>
         )}
+
+        {/* Texte engageant */}
+        <div style={{
+          fontSize: '14px',
+          color: '#4CAF50',
+          fontWeight: '600',
+          fontStyle: 'italic',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px'
+        }}>
+          ✨ On vous attend !
+        </div>
 
         {/* Date */}
         <div style={{
@@ -124,27 +155,55 @@ export default function EventCard({ event }) {
         <Link
           href={`/evenements/${event.slug}`}
           style={{
-            display: 'inline-block',
+            display: 'inline-flex',
             padding: '12px 24px',
             backgroundColor: '#4CAF50',
             color: 'white',
-            borderRadius: '6px',
+            borderRadius: '8px',
             textDecoration: 'none',
             fontWeight: '600',
             fontSize: '15px',
             textAlign: 'center',
             minHeight: '48px',
-            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'background-color 0.2s'
+            gap: '8px',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '0 2px 8px rgba(76, 175, 80, 0.3)'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#45a049'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#45a049'
+            e.currentTarget.style.transform = 'translateY(-2px)'
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(76, 175, 80, 0.4)'
+            const arrow = e.currentTarget.querySelector('.arrow-icon')
+            if (arrow) arrow.style.transform = 'translateX(4px)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#4CAF50'
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(76, 175, 80, 0.3)'
+            const arrow = e.currentTarget.querySelector('.arrow-icon')
+            if (arrow) arrow.style.transform = 'translateX(0)'
+          }}
         >
-          Voir les détails →
+          Voir les détails
+          <span className="arrow-icon" style={{
+            transition: 'transform 0.3s',
+            display: 'inline-block'
+          }}>→</span>
         </Link>
       </div>
+
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.8;
+          }
+        }
+      `}</style>
     </div>
   )
 }

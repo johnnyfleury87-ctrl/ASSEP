@@ -32,11 +32,36 @@ export default function Navbar() {
       }}>
         {/* Logo/Titre */}
         <Link href="/" style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
           fontSize: '18px',
           fontWeight: 'bold',
           color: '#4CAF50',
-          textDecoration: 'none'
+          textDecoration: 'none',
+          transition: 'transform 0.2s'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'scale(1.02)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)'
         }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            backgroundColor: '#4CAF50',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '22px',
+            fontWeight: 'bold',
+            color: 'white',
+            boxShadow: '0 2px 8px rgba(76, 175, 80, 0.3)'
+          }}>
+            🏫
+          </div>
           ASSEP
         </Link>
 
