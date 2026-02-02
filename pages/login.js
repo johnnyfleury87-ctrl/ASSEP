@@ -105,6 +105,29 @@ export default function Login() {
           >
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
+
+          {/* Lien vers inscription */}
+          <div style={{
+            marginTop: '20px',
+            textAlign: 'center',
+            padding: '15px',
+            borderTop: '1px solid #e0e0e0'
+          }}>
+            <p style={{ margin: '0 0 10px 0', color: '#666' }}>
+              Vous n'avez pas de compte ?
+            </p>
+            <Link 
+              href="/espace-membres"
+              style={{
+                color: '#4CAF50',
+                fontWeight: 'bold',
+                fontSize: '16px',
+                textDecoration: 'underline'
+              }}
+            >
+              S'inscrire comme membre
+            </Link>
+          </div>
         </form>
       </div>
     </Layout>
