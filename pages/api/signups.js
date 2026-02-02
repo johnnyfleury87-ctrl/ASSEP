@@ -60,7 +60,7 @@ export default async function handler(req, res) {
 
     // Insérer l'inscription (le trigger check_shift_capacity vérifie la capacité)
     const { data: signup, error: signupError } = await supabaseAdmin
-      .from('volunteer_signups')
+      .from('signups')
       .insert({
         event_id: eventId,
         shift_id: shiftId,

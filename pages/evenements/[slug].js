@@ -410,7 +410,7 @@ export async function getServerSideProps({ params }) {
         if (shifts) {
           for (const shift of shifts) {
             const { count } = await supabase
-              .from('volunteer_signups')
+              .from('signups')
               .select('id', { count: 'exact', head: true })
               .eq('shift_id', shift.id)
               .eq('status', 'confirmed')

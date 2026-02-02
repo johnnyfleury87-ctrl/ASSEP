@@ -97,7 +97,7 @@ export default async function handler(req, res) {
 
     // Récupérer les bénévoles qui ont opt-in (inscrits aux événements)
     const { data: volunteers, error: volunteersError } = await supabaseAdmin
-      .from('volunteer_signups')
+      .from('signups')
       .select('email, first_name, last_name')
       .eq('comms_opt_in', true)
       .eq('status', 'confirmed')

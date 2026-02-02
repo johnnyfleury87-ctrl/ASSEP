@@ -95,21 +95,16 @@ export default function EditEvent() {
   const canEdit = () => {
     if (!profile || !event) return false
     
-    // JETC admin et président/vice peuvent tout éditer
-    if (profile.is_jetc_admin || ['president', 'vice_president'].includes(profile.role)) {
+    // JETC admin, président/vice, secrétaire/vice peuvent tout éditer
+    if (profile.is_jetc_admin || ['president', 'vice_president', 'secretaire', 'vice_secretaire'].includes(profile.role)) {
       return true
-    }
-    
-    // Secrétaire/vice peuvent éditer leurs événements en draft/pending_approval
-    if (['secretaire', 'vice_secretaire'].includes(profile.role)) {
-      return event.created_by === profile.id && ['draft', 'pending_approval'].includes(event.status)
     }
     
     return false
   }
 
   const canPublish = () => {
-    return profile && (profile.is_jetc_admin || ['president', 'vice_president'].includes(profile.role))
+    return profile && (profile.is_jetc_admin || ['president', 'vice_president', 'secretaire', 'vice_secretaire'].includes(profile.role))
   }
 
   const handleSubmit = async (e) => {

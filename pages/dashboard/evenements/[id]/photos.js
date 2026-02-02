@@ -175,7 +175,7 @@ export default function EventPhotos() {
   const handleSetCover = async (photoId) => {
     const canModify = profile && (
       profile.is_jetc_admin || 
-      ['president', 'vice_president'].includes(profile.role) ||
+      ['president', 'vice_president', 'secretaire', 'vice_secretaire'].includes(profile.role) ||
       event.status !== 'published'
     )
 
@@ -239,7 +239,7 @@ export default function EventPhotos() {
   const handleDelete = async (photo) => {
     const canDelete = profile && (
       profile.is_jetc_admin || 
-      ['president', 'vice_president'].includes(profile.role) ||
+      ['president', 'vice_president', 'secretaire', 'vice_secretaire'].includes(profile.role) ||
       (event.status !== 'published' || !photo.is_cover)
     )
 

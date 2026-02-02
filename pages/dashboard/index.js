@@ -56,7 +56,7 @@ export default function Dashboard() {
 
       // Compter les bénévoles inscrits
       const { count: volunteersCount } = await supabase
-        .from('volunteer_signups')
+        .from('signups')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'confirmed')
 
