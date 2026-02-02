@@ -40,10 +40,17 @@ export default function EventVolunteers() {
 
     setEvent(eventData)
 
+    // Récupérer les bénévoles avec jointure sur profiles
     const { data: signups } = await supabase
-      .from('volunteer_signups')
+      .from('event_volunteers')
       .select(`
         *,
+        profiles (
+          first_name,
+          last_name,
+          email,
+          phone
+        ),
         event_shifts (
           starts_at,
           ends_at,
@@ -53,6 +60,7 @@ export default function EventVolunteers() {
         )
       `)
       .eq('event_id', id)
+      .eq('status', 'confirmed')
       .order('created_at', { ascending: false })
 
     setVolunteers(signups || [])
@@ -62,17 +70,16 @@ export default function EventVolunteers() {
   const exportCSV = () => {
     if (volunteers.length === 0) return
 
-    const headers = ['Prénom', 'Nom', 'Email', 'Téléphone', 'Tâche', 'Créneau début', 'Créneau fin', 'Statut', 'Comm. opt-in']
+    const headers = ['Prénom', 'Nom', 'Email', 'Téléphone', 'Tâche', 'Créneau début', 'Créneau fin', 'Statut']
     const rows = volunteers.map(v => [
-      v.first_name,
-      v.last_name,
-      v.email,
-      v.phone || '',
+      v.profiles?.first_name || '',
+      v.profiles?.last_name || '',
+      v.profiles?.email || '',
+      v.profiles?.phone || '',
       v.event_shifts?.event_tasks?.label || '',
-      new Date(v.event_shifts?.starts_at).toLocaleString('fr-FR'),
-      new Date(v.event_shifts?.ends_at).toLocaleString('fr-FR'),
-      v.status,
-      v.comms_opt_in ? 'Oui' : 'Non'
+      v.event_shifts?.starts_at ? new Date(v.event_shifts.starts_at).toLocaleString('fr-FR') : '',
+      v.event_shifts?.ends_at ? new Date(v.event_shifts.ends_at).toLocaleString('fr-FR') : '',
+      v.status
     ])
 
     const csvContent = [
@@ -142,10 +149,10 @@ export default function EventVolunteers() {
             <tbody>
               {volunteers.map(volunteer => (
                 <tr key={volunteer.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '12px' }}>{volunteer.first_name}</td>
-                  <td style={{ padding: '12px' }}>{volunteer.last_name}</td>
-                  <td style={{ padding: '12px' }}>{volunteer.email}</td>
-                  <td style={{ padding: '12px' }}>{volunteer.phone || '-'}</td>
+                  <td style={{ padding: '12px' }}>{volunteer.profiles?.first_name || '-'}</td>
+                  <td style={{ padding: '12px' }}>{volunteer.profiles?.last_name || '-'}</td>
+                  <td style={{ padding: '12px' }}>{volunteer.profiles?.email || '-'}</td>
+                  <td style={{ padding: '12px' }}>{volunteer.profiles?.phone || '-'}</td>
                   <td style={{ padding: '12px' }}>{volunteer.event_shifts?.event_tasks?.label || '-'}</td>
                   <td style={{ padding: '12px', fontSize: '14px' }}>
                     {volunteer.event_shifts ? (
