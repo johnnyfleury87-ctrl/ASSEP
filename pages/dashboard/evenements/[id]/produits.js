@@ -347,7 +347,7 @@ export default function EventProducts() {
 
             <div>
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                Prix (CHF) *
+                Prix (€) *
               </label>
               <input
                 type="number"
@@ -476,7 +476,7 @@ export default function EventProducts() {
                   <td style={{ padding: '12px' }}>{product.name}</td>
                   <td style={{ padding: '12px', color: '#666' }}>{product.category || '-'}</td>
                   <td style={{ padding: '12px', textAlign: 'right', fontWeight: 'bold' }}>
-                    {product.price.toFixed(2)} CHF
+                    {product.price ? product.price.toFixed(2) : '0.00'} €
                   </td>
                   <td style={{ padding: '12px', textAlign: 'center', color: '#666' }}>
                     {product.stock !== null ? product.stock : '-'}

@@ -142,7 +142,7 @@ export default function EventDetail({ event, buvette, paymentMethods, tasksWithS
               }}>
                 <h4>{item.name}</h4>
                 <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#4CAF50' }}>
-                  {(item.price_cents / 100).toFixed(2)} {item.currency}
+                  {item.price ? item.price.toFixed(2) : '0.00'} €
                 </p>
               </div>
             ))}
