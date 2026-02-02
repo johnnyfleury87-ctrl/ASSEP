@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabaseClient'
 import { useState } from 'react'
 import Link from 'next/link'
 import Layout from '../../components/Layout'
+import VolunteerSignup from '../../components/VolunteerSignup'
 import safeLog from '../../lib/logger'
 
 export default function EventDetail({ event, buvette, paymentMethods, tasksWithShifts, donationCounter, photos }) {
@@ -129,6 +130,9 @@ export default function EventDetail({ event, buvette, paymentMethods, tasksWithS
           </div>
         </section>
       )}
+
+      {/* Section Inscription Bénévoles */}
+      <VolunteerSignup eventId={event.id} />
 
       {/* Buvette */}
       {event.buvette_active && buvette && buvette.length > 0 && (

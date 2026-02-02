@@ -296,6 +296,33 @@ export async function getServerSideProps() {
       .order('event_date', { ascending: true })
       .limit(3)
 
+    // Charger les photos de couverture pour chaque événement
+    if (events && events.length > 0) {
+      const eventsWithPhotos = await Promise.all(
+        events.map(async (event) => {
+          const { data: photo } = await supabase
+            .from('event_photos')
+            .select('storage_path')
+            .eq('event_id', event.id)
+            .eq('is_cover', true)
+            .single()
+          
+          return {
+            ...event,
+            cover_photo: photo?.storage_path || null
+          }
+        })
+      )
+      
+      return {
+        props: {
+          events: eventsWithPhotos,
+          bureau: [],
+          balance: 0
+        }
+      }
+    }
+
     // Récupérer les membres du bureau actifs
     const { data: bureau } = await supabase
       .from('bureau_members')
