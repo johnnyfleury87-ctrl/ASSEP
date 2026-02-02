@@ -65,8 +65,9 @@ export default function VolunteerSignup({ eventId }) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        setError('Vous devez être connecté pour vous inscrire')
-        setActionLoading(false)
+        // Rediriger vers espace-membres avec retour vers cet événement
+        const currentUrl = window.location.pathname
+        window.location.href = `/espace-membres?redirect=${encodeURIComponent(currentUrl)}`
         return
       }
 
@@ -82,11 +83,15 @@ export default function VolunteerSignup({ eventId }) {
       const data = await response.json()
 
       if (response.ok) {
-        setMessage(data.message)
+        setMessage('✅ Merci pour votre engagement ! Votre inscription comme bénévole a bien été prise en compte.')
         setIsRegistered(true)
         await loadData()
       } else {
-        setError(data.error || 'Erreur lors de l\'inscription')
+        if (data.error && data.error.includes('Limite atteinte')) {
+          setError('⚠️ Le nombre de bénévoles requis est déjà atteint pour cet événement.')
+        } else {
+          setError(data.error || 'Erreur lors de l\'inscription')
+        }
       }
     } catch (err) {
       safeLog.error('Register error:', err)
@@ -222,11 +227,17 @@ export default function VolunteerSignup({ eventId }) {
               borderRadius: '8px',
               textAlign: 'center'
             }}>
-              <p style={{ marginBottom: '15px' }}>
-                Connectez-vous pour vous inscrire comme bénévole
+              <p style={{ marginBottom: '15px', fontWeight: '600' }}>
+                Pour vous inscrire comme bénévole, vous devez disposer d'un compte membre ASSEP.
               </p>
-              <Button href="/login" variant="primary">
-                Se connecter
+              <Button 
+                onClick={() => {
+                  const currentUrl = window.location.pathname
+                  window.location.href = `/espace-membres?redirect=${encodeURIComponent(currentUrl)}`
+                }}
+                variant="primary"
+              >
+                Devenir membre / Se connecter
               </Button>
             </div>
           ) : isRegistered ? (
@@ -241,10 +252,10 @@ export default function VolunteerSignup({ eventId }) {
                 color: '#4CAF50',
                 marginBottom: '15px'
               }}>
-                ✅ Vous êtes inscrit comme bénévole !
+                ✅ Merci pour votre engagement !
               </p>
               <p style={{ marginBottom: '15px', color: '#666' }}>
-                Merci pour votre aide. Nous vous contacterons prochainement.
+                Votre inscription comme bénévole a bien été prise en compte. Nous vous contacterons prochainement.
               </p>
               <Button
                 onClick={handleUnregister}
