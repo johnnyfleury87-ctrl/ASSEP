@@ -8,6 +8,7 @@ import Link from 'next/link'
 import Button from '../../components/Button'
 import TransactionForm from '../../components/TransactionForm'
 import safeLog from '../../lib/logger'
+import { getTreasuryBalance } from '../../lib/treasuryBalance'
 
 export default function Tresorerie() {
   const router = useRouter()
@@ -49,8 +50,26 @@ export default function Tresorerie() {
     }
 
     setUserRole(profileData.role)
-    loadTransactions()
-    loadStartingBalance()
+    await loadAllData()
+  }
+
+  const loadAllData = async () => {
+    // Charger transactions et solde en parallèle
+    await Promise.all([
+      loadTransactions(),
+      loadBalanceFromAPI()
+    ])
+  }
+
+  const loadBalanceFromAPI = async () => {
+    try {
+      const balanceData = await getTreasuryBalance()
+      setStartingBalance(balanceData.startingBalance)
+      setStartingBalanceDate(balanceData.startingBalanceDate)
+      setBalance(balanceData.transactionsTotal)
+    } catch (err) {
+      safeLog.error('❌ Load balance error:', err)
+    }
   }
 
   const loadTransactions = async () => {
@@ -80,9 +99,6 @@ export default function Tresorerie() {
       const data = await response.json()
       safeLog.debug('✅ Transactions chargées:', data)
       setTransactions(data.transactions || [])
-      // Le balance de l'API est maintenant la somme des transactions uniquement
-      // On calculera le solde total avec startingBalance + balance
-      setBalance(data.balance || 0)
     } catch (err) {
       safeLog.error('❌ Load error:', err)
       setError(err.message)
@@ -91,27 +107,7 @@ export default function Tresorerie() {
     }
   }
 
-  const loadStartingBalance = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
 
-      const response = await fetch('/api/finance/starting-balance', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setStartingBalance(data.starting_balance || 0)
-        setStartingBalanceDate(data.starting_balance_date)
-      }
-    } catch (err) {
-      safeLog.error('❌ Load starting balance error:', err)
-      // Ne pas afficher d'erreur si le solde de départ n'est pas encore défini
-    }
-  }
 
   const handleUpdateStartingBalance = async () => {
     setError(null)
@@ -151,7 +147,7 @@ export default function Tresorerie() {
       setShowStartingBalanceModal(false)
       setTempStartingBalance('')
       setTempStartingBalanceDate('')
-      loadStartingBalance()
+      await loadBalanceFromAPI()
     } catch (err) {
       safeLog.error('❌ handleUpdateStartingBalance error:', err)
       setError(err.message || 'Erreur lors de la mise à jour du solde de départ')
@@ -200,7 +196,7 @@ export default function Tresorerie() {
 
       setMessage('Transaction créée avec succès !')
       setShowForm(false)
-      loadTransactions()
+      await loadAllData() // Recharger tout pour cohérence
     } catch (err) {
       safeLog.error('❌ handleCreate error:', err)
       setError(err.message || 'Erreur lors de la création')
@@ -226,7 +222,7 @@ export default function Tresorerie() {
         },
         body: JSON.stringify(formData)
       })
-
+await loadAllData() // Recharger tout pour cohérence
       // Vérifier le content-type avant de parser le JSON
       const contentType = response.headers.get('content-type')
       if (!contentType || !contentType.includes('application/json')) {
@@ -243,7 +239,7 @@ export default function Tresorerie() {
       setMessage('Transaction modifiée avec succès !')
       setShowForm(false)
       setEditingTransaction(null)
-      loadTransactions()
+      await loadAllData() // Recharger tout pour cohérence
     } catch (err) {
       safeLog.error('❌ handleUpdate error:', err)
       setError(err.message || 'Erreur lors de la modification')
@@ -288,7 +284,7 @@ export default function Tresorerie() {
       }
 
       setMessage('Transaction supprimée avec succès !')
-      loadTransactions()
+      await loadAllData() // Recharger tout pour cohérence
     } catch (err) {
       safeLog.error('❌ handleDelete error:', err)
       setError(err.message || 'Erreur lors de la suppression')

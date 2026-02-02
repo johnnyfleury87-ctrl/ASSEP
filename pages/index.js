@@ -330,20 +330,17 @@ export async function getServerSideProps() {
       .eq('is_active', true)
       .order('display_order', { ascending: true })
 
-    // Calculer le solde de la trésorerie (avec supabaseAdmin pour bypasser RLS)
-    const { data: transactions } = await supabaseAdmin
-      .from('transactions')
-      .select('type, amount')
-    
+    // Récupérer le solde de trésorerie depuis l'API centralisée
     let balance = 0
-    if (transactions) {
-      transactions.forEach(t => {
-        if (t.type === 'income') {
-          balance += parseFloat(t.amount)
-        } else {
-          balance -= parseFloat(t.amount)
-        }
-      })
+    try {
+      const balanceResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/treasury/balance`)
+      if (balanceResponse.ok) {
+        const balanceData = await balanceResponse.json()
+        balance = balanceData.currentBalance || 0
+      }
+    } catch (balanceError) {
+      safeLog.error('Error loading treasury balance:', balanceError)
+      // En cas d'erreur, balance reste à 0
     }
 
     return {

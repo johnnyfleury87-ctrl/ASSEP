@@ -60,20 +60,17 @@ export default function Dashboard() {
         .select('id', { count: 'exact', head: true })
         .eq('status', 'confirmed')
 
-      // Calculer le solde trésorerie depuis transactions
-      const { data: transactions } = await supabase
-        .from('transactions')
-        .select('type, amount')
-
+      // Récupérer le solde de trésorerie depuis l'API centralisée
       let balance = 0
-      if (transactions) {
-        transactions.forEach(t => {
-          if (t.type === 'income') {
-            balance += parseFloat(t.amount)
-          } else {
-            balance -= parseFloat(t.amount)
-          }
-        })
+      try {
+        const balanceResponse = await fetch('/api/treasury/balance')
+        if (balanceResponse.ok) {
+          const balanceData = await balanceResponse.json()
+          balance = balanceData.currentBalance || 0
+        }
+      } catch (balanceError) {
+        safeLog.error('Error loading treasury balance:', balanceError)
+        // En cas d'erreur, balance reste à 0
       }
 
       setStats({
@@ -173,6 +170,9 @@ export default function Dashboard() {
               <h3 style={{ margin: '0 0 10px 0', color: '#388e3c' }}>Solde trésorerie</h3>
               <p style={{ fontSize: '32px', fontWeight: 'bold', margin: 0 }}>
                 {stats.balance.toFixed(2)} €
+              </p>
+              <p style={{ fontSize: '12px', color: '#666', margin: '8px 0 0 0' }}>
+                Solde de départ inclus
               </p>
             </div>
           )}
