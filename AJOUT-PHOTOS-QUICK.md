@@ -1,37 +1,54 @@
 # Instructions rapides : Ajouter des photos à la page d'accueil
 
+## ⚠️ MISE À JOUR : Nouvelle structure organisée
+
+**Ce guide a été remplacé par une structure plus claire.**
+
+➡️ **Voir maintenant : [STRUCTURE-IMAGES.md](STRUCTURE-IMAGES.md)**
+
+Cette nouvelle structure vous indique **exactement** où placer chaque photo.
+
+---
+
 ## 🚀 Quick Start (2 minutes)
 
 ### Étape 1 : Ajouter vos photos
 
-1. Créez le dossier si nécessaire :
+Les photos du carrousel vont maintenant dans :
+
 ```bash
-mkdir -p /workspaces/ASSEP/public/photos
+/workspaces/ASSEP/public/photos/home/hero/
 ```
 
-2. Copiez 3-5 photos de vos événements dans `/workspaces/ASSEP/public/photos/`
+1. Copiez 3-5 photos de vos événements dans ce dossier
 
-Nommez-les par exemple :
-- `fete-ecole-2025.jpg`
-- `kermesse.jpg`
-- `activite-enfants.jpg`
-- `spectacle.jpg`
-- `buvette.jpg`
+2. Renommez-les avec un **préfixe numérique** :
+   - `01-fete-ecole-2025.jpg`
+   - `02-kermesse.jpg`
+   - `03-activite-enfants.jpg`
+   - `04-spectacle.jpg`
+   - `05-buvette.jpg`
+
+**Pourquoi ?** Le préfixe contrôle l'ordre de défilement.
+
+---
 
 ### Étape 2 : Les déclarer dans le code
 
-Éditez `/workspaces/ASSEP/lib/constants.js`, ligne ~15 :
+Éditez `/workspaces/ASSEP/lib/constants.js`, ligne ~19 :
 
 ```javascript
-// Images du carrousel hero
+// Images du carrousel hero (ordre alphabétique)
 export const HERO_IMAGES = [
-  '/hero.png',
-  '/photos/fete-ecole-2025.jpg',
-  '/photos/kermesse.jpg',
-  '/photos/activite-enfants.jpg',
-  '/photos/spectacle.jpg'
+  '/photos/home/hero/hero.png',
+  '/photos/home/hero/01-fete-ecole-2025.jpg',
+  '/photos/home/hero/02-kermesse.jpg',
+  '/photos/home/hero/03-activite-enfants.jpg',
+  '/photos/home/hero/04-spectacle.jpg'
 ]
 ```
+
+---
 
 ### Étape 3 : C'est fini !
 
@@ -51,16 +68,17 @@ Avant d'ajouter les photos, optimisez-les :
 
 ---
 
-## 🔄 Si vous n'avez pas encore de photos
+## 📂 Structure complète des images
 
-Le site fonctionne déjà avec `/hero.png` (image actuelle).
+Pour savoir où placer **toutes les photos** du site (événements, logo, etc.) :
 
-Le carrousel attendra que vous ajoutiez d'autres images.
+➡️ **Voir : [STRUCTURE-IMAGES.md](STRUCTURE-IMAGES.md)**
 
 ---
 
 ## 📚 Documentation complète
 
-Pour plus de détails, voir :
-- [docs/GUIDE-PHOTOS-ACCUEIL.md](docs/GUIDE-PHOTOS-ACCUEIL.md) : guide complet
-- [AMELIORATIONS-ACCUEIL-2026-02-02.md](AMELIORATIONS-ACCUEIL-2026-02-02.md) : récapitulatif des améliorations
+- [STRUCTURE-IMAGES.md](STRUCTURE-IMAGES.md) : **Structure organisée de tous les dossiers**
+- [/public/photos/home/hero/README.md](/public/photos/home/hero/README.md) : Guide carrousel détaillé
+- [docs/GUIDE-PHOTOS-ACCUEIL.md](docs/GUIDE-PHOTOS-ACCUEIL.md) : Guide technique complet
+- [AMELIORATIONS-ACCUEIL-2026-02-02.md](AMELIORATIONS-ACCUEIL-2026-02-02.md) : Récapitulatif des améliorations
