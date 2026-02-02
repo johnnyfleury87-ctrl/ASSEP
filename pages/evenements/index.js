@@ -4,6 +4,7 @@
 import { supabase } from '../../lib/supabaseClient'
 import Link from 'next/link'
 import Layout from '../../components/Layout'
+import ClientDate from '../../components/ClientDate'
 import safeLog from '../../lib/logger'
 
 export default function EventsList({ upcomingEvents, pastEvents }) {
@@ -44,14 +45,7 @@ export default function EventsList({ upcomingEvents, pastEvents }) {
                   <h3>{event.name}</h3>
                   {event.description && <p style={{ color: '#666' }}>{event.description}</p>}
                   <p><strong>📍 {event.location}</strong></p>
-                  <p>📅 {new Date(event.event_date).toLocaleDateString('fr-FR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}</p>
+                  <p>📅 <ClientDate date={event.event_date} format="full" /></p>
                   <Link href={`/evenements/${event.slug}`} style={{ 
                     display: 'inline-block',
                     marginTop: '10px',
@@ -105,7 +99,7 @@ export default function EventsList({ upcomingEvents, pastEvents }) {
                 <div>
                   <h4>{event.name}</h4>
                   <p style={{ fontSize: '14px', color: '#666' }}>
-                    {new Date(event.event_date).toLocaleDateString('fr-FR')} - {event.location}
+                    <ClientDate date={event.event_date} format="short" /> - {event.location}
                   </p>
                   <Link href={`/evenements/${event.slug}`} style={{ 
                     fontSize: '14px',

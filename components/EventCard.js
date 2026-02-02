@@ -2,19 +2,9 @@
 // Carte événement responsive
 
 import Link from 'next/link'
+import ClientDate from './ClientDate'
 
 export default function EventCard({ event }) {
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('fr-FR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
   // Construire l'URL de la photo de couverture
   const coverImageUrl = event.cover_photo
@@ -115,7 +105,7 @@ export default function EventCard({ event }) {
           color: '#555'
         }}>
           <span>📅</span>
-          <span>{formatDate(event.event_date)}</span>
+          <ClientDate date={event.event_date} format="full" />
         </div>
 
         {/* Lieu */}

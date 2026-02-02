@@ -6,6 +6,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Layout from '../../components/Layout'
 import VolunteerSignup from '../../components/VolunteerSignup'
+import ClientDate from '../../components/ClientDate'
 import safeLog from '../../lib/logger'
 
 export default function EventDetail({ event, buvette, paymentMethods, tasksWithShifts, donationCounter, photos }) {
@@ -83,14 +84,7 @@ export default function EventDetail({ event, buvette, paymentMethods, tasksWithS
       
       <div style={{ margin: '20px 0' }}>
         <p><strong>📍 Lieu :</strong> {event.location}</p>
-        <p><strong>📅 Date :</strong> {new Date(event.event_date).toLocaleDateString('fr-FR', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        })}</p>
+        <p><strong>📅 Date :</strong> <ClientDate date={event.event_date} format="datetime" /></p>
       </div>
 
       {/* Galerie photos */}
@@ -232,9 +226,9 @@ export default function EventDetail({ event, buvette, paymentMethods, tasksWithS
                           value={shift.id}
                           disabled={placesLeft <= 0}
                         >
-                          {new Date(shift.starts_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                          {shift.starts_at.substring(11, 16)}
                           {' - '}
-                          {new Date(shift.ends_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                          {shift.ends_at.substring(11, 16)}
                           {' '}
                           ({placesLeft > 0 ? `${placesLeft} place(s) restante(s)` : 'Complet'})
                         </option>
